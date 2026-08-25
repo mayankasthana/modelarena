@@ -1,0 +1,463 @@
+<title>ModelArena UX map</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+<style>
+:root{
+  --ground:#0b0f13; --surface:#12181f; --surface2:#1a222c; --surface3:#212b36; --line:#26313d;
+  --ink:#e8edf2; --dim:#93a0ad;
+  --accent:#3fd6c8; --accent-ink:#04231f; --accent-soft:rgba(63,214,200,.14);
+  --router:#a79bff; --router-ink:#191033; --router-soft:rgba(167,155,255,.16);
+  --ok:#55e0a5; --warn:#e9b64f; --err:#f27777;
+  --ok-soft:rgba(85,224,165,.15); --warn-soft:rgba(233,182,79,.16); --err-soft:rgba(242,119,119,.15);
+}
+:root:not([data-theme="light"]) body{background:var(--ground);color:var(--ink)}
+:root[data-theme="light"]{
+  --ground:#f2f5f7; --surface:#ffffff; --surface2:#edf1f5; --surface3:#e3e9ef; --line:#d8dfe6;
+  --ink:#16212c; --dim:#5c6a78;
+  --accent:#0b8f84; --accent-ink:#ffffff; --accent-soft:rgba(11,143,132,.13);
+  --router:#6d5bd0; --router-ink:#ffffff; --router-soft:rgba(109,91,208,.14);
+  --ok:#15965c; --warn:#b07a14; --err:#cf3f37;
+  --ok-soft:rgba(21,150,92,.13); --warn-soft:rgba(176,122,20,.15); --err-soft:rgba(207,63,55,.12);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:"IBM Plex Sans",system-ui,sans-serif;line-height:1.5;font-size:15px;-webkit-font-smoothing:antialiased;background:var(--ground);color:var(--ink);transition:background .25s,color .25s}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.wrap{max-width:1240px;margin:0 auto;padding:0 22px}
+.code{font-family:"IBM Plex Mono",monospace;font-size:.78rem}
+.tabnums{font-variant-numeric:tabular-nums}
+
+/* ---------- prototype chrome ---------- */
+.bar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--ground) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar .in{display:flex;align-items:center;gap:14px;padding:10px 22px;max-width:1240px;margin:0 auto;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:.01em}
+.brand .mark{color:var(--accent);font-weight:600}
+.brand .sub{color:var(--dim);font-weight:400;font-size:.76rem;letter-spacing:.18em;text-transform:uppercase}
+.grow{flex:1}
+.tools{display:flex;gap:8px;align-items:center}
+.tg{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);background:var(--surface2);color:var(--dim);border-radius:8px;font:600 .72rem "IBM Plex Mono",monospace;padding:4px 9px;cursor:pointer;letter-spacing:.02em}
+.tg:hover{color:var(--ink)}
+.tg.on{color:var(--accent);border-color:var(--accent)}
+.shell{display:grid;grid-template-columns:236px 1fr;gap:18px;max-width:1240px;margin:18px auto;padding:0 22px}
+.scen-nav{border-right:1px solid var(--line);padding-right:6px}
+.group{margin-bottom:18px}
+.group h3{font:.66rem "IBM Plex Mono",monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:0 0 8px}
+.scen{display:block;width:100%;text-align:left;border:0;background:transparent;color:var(--dim);font-size:.83rem;padding:6px 9px;border-radius:7px;cursor:pointer;line-height:1.25}
+.scen:hover{background:var(--surface2);color:var(--ink)}
+.scen.on{background:var(--accent-soft);color:var(--accent)}
+.scen .k{font-family:"IBM Plex Mono",monospace;font-size:.66rem;opacity:.7;margin-right:6px}
+.main{min-width:0}
+
+/* ---------- the app console ---------- */
+.app{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.app-head{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.app-title{font-weight:600}
+.app-title .dot{color:var(--accent)}
+.badge{font:.66rem "IBM Plex Mono",monospace;letter-spacing:.06em;padding:3px 9px;border-radius:99px;font-weight:500}
+.badge.live{background:var(--ok-soft);color:var(--ok)}
+.badge.mock{background:var(--warn-soft);color:var(--warn)}
+.console{padding:18px}
+.field-label{font:.7rem "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;margin-bottom:6px}
+.prompt{width:100%;min-height:78px;resize:vertical;background:var(--surface2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit;line-height:1.5}
+.prompt.err{border-color:var(--err)}
+.examples{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 12px}
+.chip{border:1px solid var(--line);background:var(--surface2);color:var(--dim);border-radius:99px;padding:5px 11px;font-size:.8rem;cursor:pointer}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:16px;align-items:end}
+.slider{flex:1;min-width:170px}
+.slider input{width:100%;accent-color:var(--accent)}
+.slider .val{float:right;color:var(--accent)}
+.check{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--dim)}
+.check input{accent-color:var(--accent)}
+.models{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px}
+.models .glabel{font:.68rem "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.mchips{display:flex;flex-wrap:wrap;gap:7px}
+.mchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:99px;padding:4px 10px;font-size:.78rem}
+.mchip .arch{font:.6rem "IBM Plex Mono",monospace;text-transform:uppercase;background:var(--surface3);border-radius:99px;padding:1px 6px;color:var(--dim);letter-spacing:.05em}
+.mchip.on{border-color:var(--accent);color:var(--accent)}
+.mchip.on .arch{background:var(--accent-soft);color:var(--accent)}
+.mchip.rout.on{border-color:var(--router);color:var(--router)}
+.mchip.rout.on .arch{background:var(--router-soft);color:var(--router)}
+.runrow{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.runbtn{border:0;background:var(--accent);color:var(--accent-ink);font-weight:600;border-radius:10px;padding:10px 20px;cursor:pointer;font-size:.9rem}
+.runbtn:disabled{opacity:.45;cursor:not-allowed}
+.note{font-size:.72rem;color:var(--dim)}
+
+/* status */
+.statusbar{display:flex;gap:14px;align-items:center;margin:14px 0 0;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface0,#0d1217);font-size:.8rem;flex-wrap:wrap}
+.statusbar b{color:var(--accent)}
+
+/* grid + cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:13px;margin:14px 0}
+.card{background:var(--surface2);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
+.card.auto{border-color:var(--router)}
+.card.off{opacity:.4;filter:saturate(.4)}
+.card-head{padding:10px 13px;border-bottom:1px solid var(--line)}
+.ctitle{display:flex;align-items:center;gap:7px;font-weight:600;font-size:.9rem}
+.ctitle .at{font:.57rem "IBM Plex Mono",monospace;text-transform:uppercase;background:var(--surface3);color:var(--dim);border-radius:99px;padding:1px 6px;letter-spacing:.05em}
+.ctitle .at.auto{background:var(--router-soft);color:var(--router)}
+.pill{margin-left:auto;font:.62rem "IBM Plex Mono",monospace;padding:2px 8px;border-radius:99px;font-weight:500}
+.pill.s{background:var(--accent-soft);color:var(--accent)}
+.pill.done{background:var(--ok-soft);color:var(--ok)}
+.pill.retry{background:var(--warn-soft);color:var(--warn);animation:pulse 1.1s infinite}
+.pill.err{background:var(--err-soft);color:var(--err)}
+.csub{font-size:.7rem;color:var(--dim);margin-top:1px}
+.creason{font-size:.72rem;color:var(--dim);padding:7px 13px;border-bottom:1px dashed var(--line);max-height:88px;overflow:hidden}
+.cbody{padding:11px 13px;font-size:.84rem;white-space:pre-wrap;word-break:break-word;flex:1;min-height:64px}
+.caret{display:inline-block;width:7px;height:.95em;background:var(--accent);vertical-align:text-bottom;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+@keyframes pulse{50%{opacity:.55}}
+.routed{margin:0 13px 9px;padding:6px 10px;font-size:.72rem;border-radius:8px;background:var(--router-soft);color:var(--router);border:1px solid color-mix(in srgb,var(--router) 40%,transparent)}
+.cfoot{display:flex;gap:6px 14px;flex-wrap:wrap;padding:8px 13px;border-top:1px solid var(--line);font-size:.68rem;color:var(--dim)}
+.cfoot b{color:var(--ink);font-weight:600}
+.amt{color:var(--warn)}
+.focus{outline:2px solid var(--accent);outline-offset:2px}
+
+/* empty + advisor */
+.empty{grid-column:1/-1;border:1px dashed var(--line);border-radius:12px;color:var(--dim);text-align:center;padding:46px 20px;font-size:.86rem}
+.advisor{border:1px solid var(--router);border-radius:12px;padding:18px;background:var(--surface)}
+.advisor h2{font-weight:600;font-size:1rem;color:var(--router);margin:0 0 4px;display:flex;gap:8px;align-items:center}
+.advisor .win{font:.6rem "IBM Plex Mono",monospace;text-transform:uppercase;color:var(--dim);letter-spacing:.08em;margin-bottom:10px}
+.md h4{margin:14px 0 5px;font-size:.86rem}
+.md h4:first-child{margin-top:0}
+.md p{font-size:.82rem;margin:5px 0}
+.ahint{color:var(--dim);font-size:.95em}
+.spin{display:inline-block;width:12px;height:12px;margin-right:8px;border:2px solid var(--router);border-top-color:transparent;border-radius:50%;animation:rot .8s linear infinite;vertical-align:-2px}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* caption */
+.cap{margin-top:16px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface)}
+.cap .eyebrow{font:.64rem "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+.cap h2{margin:0 0 4px;font-size:1.05rem}
+.cap p{margin:0;color:var(--dim);font-size:.85rem}
+.cap .flow{margin-top:8px;font-size:.78rem;color:var(--dim)}
+.cap .flow b{color:var(--ink)}
+.cap ul{margin:8px 0 0;padding-left:18px;color:var(--dim);font-size:.8rem}
+.cap li{margin:3px 0}
+
+/* toast */
+.toast{position:fixed;right:20px;bottom:20px;z-index:60;background:var(--surface3);border:1px solid var(--line);color:var(--ink);border-left:3px solid var(--warn);border-radius:10px;padding:11px 15px;font-size:.84rem;box-shadow:0 8px 24px rgba(0,0,0,.35);max-width:340px;animation:rise .25s ease}
+@keyframes rise{from{transform:translateY(8px);opacity:0}}
+.toast b{display:block;margin-bottom:2px}
+
+/* blocking budget banner */
+.block{display:flex;gap:12px;align-items:flex-start;margin:14px 0 0;padding:12px 15px;border:1px solid var(--warn);background:var(--warn-soft);border-radius:12px;color:var(--warn)}
+.block .b{font-weight:600}
+
+/* banner (mock / network) */
+.banner{display:flex;gap:10px;align-items:center;margin-top:12px;padding:10px 13px;border:1px solid var(--err);background:var(--err-soft);color:var(--err);border-radius:11px;font-size:.82rem}
+
+/* mobile shell */
+body.mobile .shell{grid-template-columns:1fr}
+body.mobile .scen-nav{display:flex;gap:8px;overflow-x:auto;border-right:0;padding-bottom:10px}
+body.mobile .group{margin-bottom:0}
+body.mobile .scen{white-space:nowrap;width:auto;flex-shrink:0}
+body.mobile .bar .tools{width:100%}
+@media(max-width:860px){.shell{grid-template-columns:1fr}.scen-nav{display:flex;gap:8px;overflow-x:auto;border-right:0;padding-bottom:10px}.scen{white-space:nowrap;width:auto}}
+@media (prefers-reduced-motion:reduce){.caret,.pill.retry,.spin,.toast{animation:none}}
+</style>
+
+<div class="bar"><div class="in">
+  <div class="brand"><span class="mark">⑂</span> ModelArena <span class="sub">UX map</span></div>
+  <div class="grow"></div>
+  <div class="tools">
+    <button class="tg" id="th-toggle" type="button">theme: <span id="th-label">system</span></button>
+    <button class="tg" id="mob-toggle" type="button">📱 mobile</button>
+  </div>
+</div></div>
+
+<div class="shell">
+  <nav class="scen-nav" id="scen-nav" aria-label="Scenarios"></nav>
+  <div class="main">
+    <div class="app">
+      <!-- app header -->
+      <div class="app-head">
+        <span class="app-title"><span class="dot">●</span> ModelArena</span>
+        <span class="badge live" id="mode-badge">● live</span>
+        <span style="flex:1"></span>
+        <span class="code" id="req-tag" style="color:var(--dim)"></span>
+      </div>
+
+      <!-- console -->
+      <div class="console" id="console"></div>
+    </div>
+
+    <div class="cap" id="cap"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" style="display:none"></div>
+
+<script>
+/* ------------------------------------------------------------------ */
+/*  Scenario catalog: every screen state, transition, and error case.   */
+/* ------------------------------------------------------------------ */
+const G = {
+  idle:{title:'Idle / landing',desc:'First view. Default diverse model set is pre-selected (frontier, fast, reasoning, DO auto-router) so a user can hit Run immediately.',flow:'→ entering the app'},
+  composing:{title:'Composing',desc:'An example prompt is loaded via a chip; temperature and max-tokens are visible; advisor is on. Model chips remain togglable.',flow:'Idle → click an example chip'},
+  running:{title:'Running (parallel streaming)',desc:'Every selected model streams in parallel. Cards fill live with a blinking caret; time-to-first-token is tracked; the status line shows progress.',flow:'Idle → Run'},
+  routed:{title:'Router reveal',desc:'DO\'s auto-router answers under a different id than requested; the card names the actual model it chose.',flow:'Running → router card finishes'},
+  done:{title:'Done + Advisor',desc:'All cards show telemetry (TTFT, latency, tokens, cost) and the Advisor renders Consensus → Divergences → Choosing a model.',flow:'Running → all cards done → Advisor'},
+  empty:{title:'Empty (no run yet)',desc:'The results area shows a neutral empty state before the first run.',flow:'Idle (before any run)'},
+  mock:{title:'Mock mode',desc:'When no DO token is configured the header badge flips to “mock mode” and output is synthetic and labelled — never mistaken for real.',flow:'app runs without DO_API_TOKEN'},
+  validateEmpty:{title:'Empty prompt',desc:'Run is pressed with no prompt: inline field error + a toast explains what to do. No network call is made.',flow:'Idle → Run (no prompt)'},
+  validateModels:{title:'No model selected',desc:'Run with zero models selected: a toast blocks the action. Nothing is spent.',flow:'Idle → deselect all → Run'},
+  validateLong:{title:'Prompt too long',desc:'The prompt exceeds the char cap; the field shows an error and a live counter.',flow:'Type beyond 8000 chars → Run'},
+  notFound:{title:'Per-model 404',desc:'A model id is no longer served. Its card fails on its own with a clear error; every other model still completes.',flow:'Running → one model removed from catalog'},
+  tierLocked:{title:'Per-model 403 (tier-locked)',desc:'The workspace subscription can\'t serve this model (e.g. premium). The card fails in place; siblings unaffected.',flow:'Running → model unavailable for tier'},
+  retry:{title:'429 → retrying → recovers',desc:'DO\'s gateway intermittently sheds load. The card shows “retrying…” with backoff, then completes. The run is never abandoned.',flow:'Running → 429 → backoff → done'},
+  retryGaveUp:{title:'429 → retrying → gives up',desc:'If overload persists past the retry budget the card fails with the surfaced 429; others still finish.',flow:'Running → persistent 429'},
+  budget:{title:'Daily budget exhausted',desc:'A server-side guard stops spending once the daily token budget is reached; Run is disabled with a clear message.',flow:'Any → budget guard trips'},
+  rateLimited:{title:'Client rate-limited',desc:'A per-IP limit trips; the user gets a retry-after and knows to wait. Distinct from DO\'s overload.',flow:'Repeat Run faster than limit'},
+  network:{title:'Network failure',desc:'The connection fails mid-run: status line reports the failure; partial text remains visible.',flow:'Running → connection drops'},
+  advisorLoad:{title:'Advisor loading',desc:'While the moderator synthesizes, the panel shows a spinner.',flow:'All cards done → Advisor runs'},
+  advisorFail:{title:'Advisor failed',desc:'The moderator errors; the panel degrades to an error with the rest of the run intact.',flow:'Done → moderator fails'}
+};
+
+/* ---- helpers ---- */
+const esc=(s)=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function mchip(id,label,arch,extra){return `<button class="mchip ${extra||''} on"><span>${label}</span><span class="arch">${arch}</span></button>`;}
+let live=null;
+
+function shell() {
+  const c=document.getElementById('console');
+  c.innerHTML=`
+    <div class="field-label" style="margin-top:0"><span>Prompt</span><span class="mono" id="char-count"></span></div>
+    <textarea id="prompt" class="prompt" row="3" placeholder="Ask the same question to every model…"></textarea>
+    <div class="examples">
+      <button class="chip">haiku</button><button class="chip">explain</button>
+      <button class="chip">code</button><button class="chip">copy</button>
+    </div>
+    <div class="row">
+      <div class="slider"><div class="field-label">Temperature <span class="val">0.7</span></div><input type="range" min="0" max="2" step="0.1" value="0.7"></div>
+      <div class="slider"><div class="field-label">Max tokens <span class="val">1024</span></div><input type="range" min="64" max="4096" step="64" value="1024"></div>
+      <label class="check"><input type="checkbox" checked> Advisor (consensus + recommendation)</label>
+    </div>
+    <div class="models">
+      <div class="glabel">Models &nbsp;·&nbsp; race a subset</div>
+      <div class="mchips" id="mchips"></div>
+    </div>
+    <div class="runrow">
+      <span class="note mono">limits: 8/run · 6/min/IP · 400k tokens/day</span>
+      <button class="runbtn" id="runbtn">Run models ⏵</button>
+    </div>`;
+}
+function modelsUi(variant){
+  const base=[
+    ['deepseek-v4-pro','DeepSeek V4 Pro','frontier',''],
+    ['deepseek-v4-flash-0731','DeepSeek V4 Flash','fast',''],
+    ['llama-4-maverick','Llama 4 Maverick','open',''],
+    ['kimi-k3','Kimi K3','reasoning',''],
+    ['router:general','DO Auto-Router','auto','rout'],
+  ];
+  const map={
+    allOn:base,
+    someOff:base.map((m,i)=>i===2?[m[0],m[1],m[2],' off'??'']:m),
+  };
+  const list = variant==='someOff'
+    ? base.map((m,i)=> i===2 ? [...m.slice(0,3),''] : m)
+    : base;
+  const chips=list.map(m=>mchip(m[0],m[1],m[2], (m[0]==='router:general'?'rout':'')+(variant==='none'?'':' on'))).join('');
+  document.getElementById('mchips').innerHTML=chips;
+}
+function status(text,elapsed,extra){return `<div class="statusbar"><span><b>${text}</b></span><span class="mono">${elapsed}</span>${extra||''}</div>`;}
+
+function card(model,arch,opts){
+  opts=opts||{};
+  const pill=opts.pill||`<span class="pill s">streaming</span>`;
+  const sub=opts.sub||`${model[0] === 'router:general' ? 'DigitalOcean' : 'DeployTime'} · ${model[3]||'open model'}`;
+  const routed=opts.routed?`<div class="routed">Auto-Router chose: <b class="mono">${opts.routed}</b></div>`:'';
+  const reason=opts.reason?`<div class="creason mono">${esc(opts.reason)}</div>`:'';
+  const body=opts.body||'';
+  const foot=opts.foot?`<div class="cfoot">${opts.foot}</div>`:'';
+  return `<article class="card ${arch==='auto'?'auto':''} ${opts.off?'off':''}">
+    <div class="card-head"><div class="ctitle"><span>${model[1]}</span><span class="at ${arch==='auto'?'auto':''}">${arch}</span>${pill}</div>
+    <div class="csub">${sub}</div></div>
+    ${reason}${routed}<div class="cbody" data-cbody>${body}</div>${foot}</article>`;
+}
+function foot(ttft,lat,tok,cost,extra){return `<span class="mono">TTFT <b>${ttft}</b></span><span class="mono">lat <b>${lat}</b></span><span class="mono">tok <b>${tok}</b></span><span class="mono">cost <b>${cost}</b></span>${extra||''}`;}
+
+/* ---- caption ---- */
+function cap(scen,flowEx){
+  const g=G[scen];
+  const flows = flowEx.map(f=>`<li><b>${f[0]}</b> — ${f[1]}</li>`).join('');
+  document.getElementById('cap').innerHTML=`<div class="eyebrow">scenario · ${scen}</div><h2>${g.title}</h2><p>${g.desc}</p><div class="flow mono" style="margin-top:8px;font-size:.72rem">${g.flow}</div>${flows?`<div class="flow">Edge/behavior checkpoints:${''}</div><ul>${flows}</ul>`:''}`;
+}
+
+/* ---- scenario renderers ---- */
+function s_idle(){shell();modelsUi('allOn');document.getElementById('req-tag').textContent='';
+  const c=document.getElementById('console');
+  c.insertAdjacentHTML('beforeend',`<div class="grid"><div class="empty">Run a prompt above to compare models side-by-side.<br><span class="mono" style="font-size:.7rem">results stream in here, in parallel</span></div></div>`);
+  cap('idle',[['Live badge','shows “● live” when a token is configured'],['Pre-selected default set','frontier + fast + reasoning + auto-router → one click to run']]);
+}
+function s_composing(){shell();modelsUi('allOn');
+  const p=document.getElementById('prompt');p.value='Write a haiku about serverless inference.';document.querySelector('.prompt').classList.remove('err');
+  document.getElementById('char-count').textContent='58 / 8000';
+  document.getElementById('console').insertAdjacentHTML('beforeend',`<div class="grid"><div class="empty">Run a prompt above to compare models side-by-side.</div></div>`);
+  [...document.querySelectorAll('.examples .chip')][0].classList.add('on');
+  cap('composing',[['Example chips','set the prompt and highlight the active one'],['Advisor checkbox','default on; users can disable the extra model call']]);
+}
+function s_running(){
+  live=true;shell();modelsUi('someOff');
+  const base=[['deepseek-v4-pro','DeepSeek V4 Pro','frontier'],['deepseek-v4-flash-0731','DeepSeek V4 Flash','fast'],['kimi-k3','Kimi K3','reasoning'],['router:general','DO Auto-Router','auto']];
+  const c=document.getElementById('console');
+  c.insertAdjacentHTML('beforeend',status('1 / 4 complete','· 0.0s','<span class="mono" style="color:var(--dim)"></span>'));
+  let g=document.createElement('div');g.className='grid';
+  g.innerHTML=base.map((m,i)=>card(m,m[2], i>=2?{pill:'<span class="pill done">done</span>',body:m[2]==='auto'?'Routing…\nprepare your prompt against the field.':'Here is the (mock) answer from this model for illustration.',
+    foot:foot(i===3?'—':'420ms',i===3?'1.1s':'0.9s','205','$0.0000')}:{pill:'<span class="pill s">streaming</span>'})).join('');
+  c.appendChild(g);
+  const bodies=g.querySelectorAll('[data-cbody]');
+  const streams=[
+    'serverless inference\na room with no server —\neach call, a quiet launch',
+    'For backend engineers: a service mesh routes pods, services and ingress. Three sentences → three facts, no fluff.',
+    'Thinking… weigh the cheapest routing path; consider cache; pick the strongest open model for the task.',
+    'Evaluating model quality across the catalog…'
+  ];
+  body_animate(bodies,streams);
+}
+function body_animate(bodies,streams){
+  let done=0;
+  bodies.forEach((b,i)=>{
+    let j=0; const t=setInterval(()=>{
+      b.innerHTML=streams[i].slice(0,j+=2);
+      if(j>=streams[i].length){clearInterval(t);markDone(b,i);done++;updateStatus(done,bodies.length);}
+    },34);
+  });
+}
+function markDone(b,i){
+  const card=b.closest('.card');const pill=card.querySelector('.pill');pill.className='pill done';pill.textContent='done';
+  if(!card.querySelector('.cfoot'))card.insertAdjacentHTML('beforeend',`<div class="cfoot">${foot(i===3?'—':'410ms', i===3?'1.1s':'0.9s','210','$0.0000')}</div>`);
+  if(i===3)card.insertAdjacentHTML('beforeend',`<div class="routed">Auto-Router chose: <b class="mono">deepseek-v4-pro</b></div>`);
+  if(i===2){const r=document.createElement('div');r.className='creason mono';r.textContent='kimi-k3 think: evaluate the wording, keep it playful, three lines.';card.querySelector('.cbody').before(r);}
+}
+function updateStatus(done,total){
+  const sb=document.querySelector('.statusbar');
+  if(sb)sb.childNodes[0].innerHTML=`<b>${done} / ${total} complete</b>`;
+}
+function animateCounters(){}
+
+function s_routed(){shell();modelsUi('allOn');document.getElementById('console').innerHTML+=
+  `<div class="grid">`+
+  card(['deepseek-v4-flash-0731','DeepSeek V4 Flash','fast'],'fast',{pill:'<span class="pill done">done</span>',body:'The concise option.\nThree terse, correct sentences.',foot:foot('120ms','0.3s','64','$0.0000')})+
+  card(['kimi-k3','Kimi K3','reasoning'],'reasoning',{pill:'<span class="pill done">done</span>',body:'The reasoning option.\nChain-of-thought produced a careful answer.',reason:'kimi-k3 think: three sentences; avoid jargon; state trade-offs.',foot:foot('640ms','2.4s','720','$0.0000')})+
+  card(['router:general','DO Auto-Router','auto'],'auto',{pill:'<span class="pill done">done</span>',routed:'deepseek-v4-pro',body:'The Auto-Router evaluated the prompt and dispatched it to the strongest open model in the catalog.',foot:foot('180ms','1.1s','205','$0.0000')})+
+  `</div>`;
+  cap('routed',[['Router reveal','the id you requested ≠ the id served; the card names the actual model'],['Trust moment','the platform\'s own pick becomes a comparison lane']]);
+}
+function s_done(){shell();modelsUi('allOn');document.getElementById('console').insertAdjacentHTML('beforeend',
+  status('4 / 4 complete','· done','<span class="mono" style="color:var(--warn)">~$0.0004</span>'));
+  const c=document.getElementById('console');
+  c.insertAdjacentHTML('beforeend',`<div class="grid">`+
+    card(['deepseek-v4-flash-0731','DeepSeek V4 Flash','fast'],'fast',{pill:'<span class="pill done">done</span>',body:'A/B the fast lane: cheaper and ~same score on this simple prompt.',foot:foot('130ms','0.34s','62','$0.0000')})+
+    card(['deepseek-v4-pro','DeepSeek V4 Pro','frontier'],'frontier',{pill:'<span class="pill done">done</span>',body:'The high-quality lane catches nuance the cheap lane misses on harder prompts.',foot:foot('420ms','1.0s','218','$0.0011')})+
+    card(['kimi-k3','Kimi K3','reasoning'],'reasoning',{pill:'<span class="pill done">done</span>',body:'Shows work first, then the answer. Good when reasoning matters more than latency.',reason:'kimi-k3 think: reason about reader intent.',foot:foot('640ms','2.1s','711','$0.0020')})+
+    card(['router:general','DO Auto-Router','auto'],'auto',{pill:'<span class="pill done">done</span>',routed:'deepseek-v4-pro',body:'Voted with deepseek-v4-pro — it agrees with the Advisor pick.',foot:foot('180ms','1.1s','205','$0.0006')})+
+    `</div>`+
+    `<div class="advisor"><h2>Advisor</h2><div class="win mono">moderator · deepseek-v4-pro · temp 0.3</div><div class="md">
+    <h4>Consensus</h4><p>All models agree the core trade-off is <b>cost/latency vs. depth</b>; on short prompts the gap is small.</p>
+    <h4>Divergences</h4><p>DeepSeek V4 Flash is terse; Kimi K3 reasons aloud; the router silently picks one.</p>
+    <h4>Choosing a model</h4><p>For <i>this</i> prompt, <b>DeepSeek V4 Flash</b> is the value pick — near-parity output at a fraction of the cost. Reach for V4 Pro only when the task needs the extra depth.</p>
+    <h4>Not sure?</h4><p>Try rerunning with a more specific prompt; vaguer inputs widen the divergence.</p></div></div>`);
+  cap('done',[['All cards carry telemetry','TTFT · latency · tokens · cost for each model'],['Advisor is prompt-specific','it reasons about THIS run, not stale benchmarks'],['Router vote surfaced','the platform\'s pick is itself a lane']]);
+}
+function s_empty(){shell();modelsUi('allOn');document.getElementById('console').insertAdjacentHTML('beforeend',`<div class="grid"><div class="empty">Nothing here yet.</div></div>`);cap('empty',[['Calm empty state','no animation, no noise before the first run']]);}
+function s_mock(){s_idle();document.getElementById('mode-badge').className='badge mock';document.getElementById('mode-badge').textContent='● mock mode (no DO token)';document.getElementById('req-tag').textContent='synthetic · deterministic';cap('mock',[['Badge + request tag','clearly label that output is synthetic'],['Same code path','mock preserves streaming + telemetry so UX is exercised']]);}
+function s_valEmpty(){s_idle();document.querySelector('.prompt').classList.add('err');document.getElementById('char-count').textContent='0 / 8000';
+  document.getElementById('console').insertAdjacentHTML('beforeend',`<div class="cbody" style="color:var(--err);font-size:.8rem">Enter a prompt first.</div>`);
+  toast('Empty prompt','Type a prompt before running the models.','var(--err)');
+  cap('validateEmpty',[['Inline + toast','no silent failure'],['No network call','validation happens client-side before /api/run']]);
+}
+function s_valModels(){s_idle();modelsUi('none');toast('No model selected','Select at least one model to race.','var(--warn)');
+  cap('validateModels',[['Zero-cost guard','blocks before any inference is billed']]);}
+function s_valLong(){s_idle();const p=document.querySelector('.prompt');p.value='L'.repeat(8001)+'…';p.classList.add('err');document.getElementById('char-count').textContent='8001 / 8000';
+  toast('Prompt too long','Keep it under 8000 characters.','var(--warn)');
+  cap('validateLong',[['Live character counter','goes red past the cap'],['Server double-checks','MAX_PROMPT_CHARS also enforced on the API']]);}
+function s_notFound(){
+  shell();modelsUi('allOn');
+  const c=document.getElementById('console');
+  c.insertAdjacentHTML('beforeend',status('3 / 4 complete','· done',''));
+  c.insertAdjacentHTML('beforeend',`<div class="grid">`+
+    card(['deepseek-v4-flash-0731','DeepSeek V4 Flash','fast'],'fast',{pill:'<span class="pill done">done</span>',body:'Still answers.',foot:foot('130ms','0.3s','62','$0.0000')})+
+    card(['llama-4-maverick','Llama 4 Maverick','open'],'open',{off:1,pill:'<span class="pill err">error</span>',body:'✗ model not found — this id is no longer served.',foot:`<span class="mono">dur <b>1.2s</b></span><span class="mono" style="color:var(--err)">404 not_found</span>`})+
+    card(['kimi-k3','Kimi K3','reasoning'],'reasoning',{pill:'<span class="pill done">done</span>',body:'Reasons fine.',reason:'kimi-k3 think: continue.',foot:foot('640ms','2.1s','711','$0.0020')})+
+    card(['router:general','DO Auto-Router','auto'],'auto',{pill:'<span class="pill done">done</span>',routed:'deepseek-v4-pro',body:'Unaffected by the missing model.',foot:foot('180ms','1.1s','205','$0.0006')})+
+    `</div>`);
+  cap('notFound',[['Isolation','one 404 doesn\'t abort the other three'],['Clear per-card error','id + status surfaced, not a generic failure']]);
+}
+function s_tierLocked(){shell();modelsUi('allOn');
+  const c=document.getElementById('console');
+  c.insertAdjacentHTML('beforeend',status('3 / 4 complete','· done',''));
+  c.insertAdjacentHTML('beforeend',`<div class="grid">`+
+    card(['anthropic-claude-5-sonnet','Claude 5 Sonnet','premium'],'open',{off:1,pill:'<span class="pill err">unavailable</span>',body:'✗ not available for your subscription tier',foot:`<span class="mono" style="color:var(--err)">403 tier-locked</span>`})+
+    card(['deepseek-v4-flash-0731','DeepSeek V4 Flash','fast'],'fast',{pill:'<span class="pill done">done</span>',body:'The fast lane still runs.',foot:foot('130ms','0.3s','62','$0.0000')})+
+    card(['kimi-k3','Kimi K3','reasoning'],'reasoning',{pill:'<span class="pill done">done</span>',body:'Still reasons.',foot:foot('640ms','2.1s','711','$0.0020')})+
+    card(['router:general','DO Auto-Router','auto'],'auto',{pill:'<span class="pill done">done</span>',routed:'deepseek-v4-pro',body:'Routes around the locked model.',foot:foot('180ms','1.1s','205','$0.0006')})+
+    `</div>`);
+  cap('tierLocked',[['Tier-locked premium','the workspace can\'t serve it; card degrades in place'],['Remaining models unaffected','partial success is the norm']]);
+}
+function s_retry(){shell();modelsUi('allOn');
+  const c=document.getElementById('console');
+  c.insertAdjacentHTML('beforeend',status('2 / 4 complete · 1 retrying','· done',''));
+  c.insertAdjacentHTML('beforeend',`<div class="grid">`+
+    card(['deepseek-v4-flash-0731','DeepSeek V4 Flash','fast'],'fast',{pill:'<span class="pill done">done</span>',body:'Finished fast.',foot:foot('130ms','0.3s','62','$0.0000')})+
+    card(['kimi-k3','Kimi K3','reasoning'],'reasoning',{pill:'<span class="pill retry">retrying…</span>',body:''})+
+    card(['llama-4-maverick','Llama 4 Maverick','open'],'open',{pill:'<span class="pill done">done</span>',body:'Finished.',foot:foot('300ms','0.8s','140','$0.0003')})+
+    card(['router:general','DO Auto-Router','auto'],'auto',{pill:'<span class="pill retry">retrying…</span>',body:''})+
+    `</div>`);
+  // animate retry -> recovers
+  const pills=document.querySelectorAll('.pill.retry');let tries={};
+  const iv=setInterval(()=>{pills.forEach(p=>{const card=p.closest('.card');card.querySelector('.cbody').textContent=(card.querySelector('.cbody').textContent||'')+'·';});},500);
+  setTimeout(()=>{clearInterval(iv);pills[0].className='pill done';pills[0].textContent='done';pills[0].closest('.card').insertAdjacentHTML('beforeend',`<div class="cfoot">${foot('640ms','2.2s','711','$0.0020')}</div>`);pills[1].className='pill done';pills[1].textContent='done';pills[1].closest('.card').insertAdjacentHTML('beforeend',`<div class="cfoot">${foot('180ms','1.1s','205','$0.0006')} <span class="mono" style="color:var(--accent)">recovered</span></div>`);},4200);
+  cap('retry',[['“retrying…” pill','amber pulse while backoff runs'],['Never aborts the run','recovers in place'],['Recovered tag on the card foot','transparency about the transient blip']]);
+}
+function s_retryGaveUp(){s_retry();// then override to give up
+  setTimeout(()=>{document.querySelectorAll('.pill.retry').forEach(p=>{p.className='pill err';p.textContent='error';p.closest('.card').querySelector('.cbody').textContent='✗ 429 Platform overloaded — retries exhausted.';});},4200);
+  cap('retryGaveUp',[['Bounded retries','backoff gives up after the budget, never endless'],['Surfaces the real error','other cards still complete']]);
+}
+function s_budget(){
+  shell();modelsUi('allOn');
+  const r=document.querySelector('.runbtn');r.disabled=true;r.textContent='Run disabled';
+  document.getElementById('console').insertAdjacentHTML('beforeend',
+    `<div class="block"><div><div class="b">Daily inference budget reached</div><div style="font-weight:400">The server-side guard stopped spending at the configured token cap. Come back tomorrow — or raise <span class="mono">DAILY_TOKEN_BUDGET</span>.</div></div></div>`);
+  cap('budget',[['Server-side hard stop','stops before DO quota is exhausted'],['Clear reason + remedy','says how to raise it']]);
+}
+function s_rateLimited(){s_idle();toast('Too many requests','Rate limit reached — try again in 41s. Retry-After: 41','var(--warn)');
+  document.getElementById('console').insertAdjacentHTML('beforeend',`<div class="banner"><span>⏱ 429 — you've hit the per-IP run limit. Back off until the window resets (see <span class="mono">Retry-After</span>); your account's DO quota is untouched.</span></div>`);
+  cap('rateLimited',[['Per-IP client limit','distinct from DO\'s own overload'],['Retry-After honored','we tell the client when to retry']]);
+}
+function s_network(){s_running();setTimeout(()=>{document.querySelector('.statusbar').childNodes[0].innerHTML='<b>run failed: network error</b>';document.querySelectorAll('.pill.s').forEach(p=>{p.className='pill err';p.textContent='interrupted';});},1400);
+  cap('network',[['Partial text preserved','what streamed before the drop stays'],['Clear top-level failure','not a silent blank']]);
+}
+function s_advisorLoad(){s_done();const a=document.querySelector('.advisor .md');a.innerHTML=`<p><span class="spin"></span>Synthesizing consensus across 4 models…</p>`;cap('advisorLoad',[['Explicit loading state','the advisor is a separate model call'],['Rest of run intact','cards stay populated']]);}
+function s_advisorFail(){s_done();const a=document.querySelector('.advisor .md');a.innerHTML=`<p class="ahint">✗ The moderator couldn't complete. Your model answers above are unaffected — rerun to retry the advisor.</p>`;cap('advisorFail',[['Graceful degrad.','run results never blocked by the advisor'],['Retry affordance','explicit next step']]);}
+
+const R={
+  idle:s_idle,composing:s_composing,running:s_running,routed:s_routed,done:s_done,empty:s_empty,
+  mock:s_mock,validateEmpty:s_valEmpty,validateModels:s_valModels,validateLong:s_valLong,
+  notFound:s_notFound,tierLocked:s_tierLocked,retry:s_retry,retryGaveUp:s_retryGaveUp,
+  budget:s_budget,rateLimited:s_rateLimited,network:s_network,advisorLoad:s_advisorLoad,advisorFail:s_advisorFail
+};
+
+function toast(title,msg,color){const t=document.getElementById('toast');t.style.borderLeftColor=color||'var(--warn)';t.innerHTML=`<b>${title}</b>${msg}`;t.style.display='block';setTimeout(()=>t.style.display='none',4200);}
+
+/* ---- nav ---- */
+const GROUPS=[['Screens',['idle','composing','running','routed','done','empty']],
+['Errors & edges',['mock','validateEmpty','validateModels','validateLong','notFound','tierLocked','retry','retryGaveUp','budget','rateLimited','network','advisorLoad','advisorFail']]];
+let navBuilt=false;
+function buildNav(){
+  const nav=document.getElementById('scen-nav');nav.innerHTML='';
+  GROUPS.forEach(gr=>{const d=document.createElement('div');d.className='group';let h=document.createElement('h3');h.textContent=gr[0];d.appendChild(h);
+    gr[1].forEach(k=>{const b=document.createElement('button');b.className='scen';b.dataset.k=k;b.innerHTML=`<span class="k">${k}</span>${G[k].title}`;b.onclick=()=>go(k);d.appendChild(b);});
+    nav.appendChild(d);});
+  navBuilt=true;
+}
+function go(k){if(live){live=false;}document.querySelectorAll('.scen').forEach(s=>s.classList.toggle('on',s.dataset.k===k));
+  R[k](k);document.querySelector('.main .app')?.scrollIntoView?.({behavior:'smooth',block:'start'});}
+
+/* theme + mobile */
+let themeIdx=0,th=['system','light','dark'];
+document.getElementById('th-toggle').onclick=()=>{themeIdx=(themeIdx+1)%3;document.documentElement.setAttribute('data-theme',th[themeIdx]==='system'?'':th[themeIdx]);document.getElementById('th-label').textContent=th[themeIdx];};
+document.getElementById('mob-toggle').onclick=()=>{document.body.classList.toggle('mobile');document.getElementById('mob-toggle').classList.toggle('on',document.body.classList.contains('mobile'));};
+
+buildNav();go('idle');
+</script>
