@@ -53,6 +53,14 @@ the SDKs already do."
   Buffering: no`) and disconnect handling. Polling would be more robust on
   very flaky networks but adds RPC complexity and latency — not worth it here.
 
+**Live markdown rendering.** Card bodies are re-rendered as markdown on a short
+debounce (render the *whole* accumulated buffer each tick — never incremental
+HTML). This is deliberately XSS-safe: every token is escaped and we only emit
+our own tags (headings, lists, bold/code, fenced `<pre>`), so untrusted model
+output can't inject markup. Accepted tradeoff: while a code fence or bold
+delimiter is still open mid-stream the block renders "whole" until it closes —
+a momentary flicker that's inherent and acceptable.
+
 ## 5. Reasoning models & the `reasoning_content` channel
 
 `kimi-k3` (and DeepSeek-backed models) emit chain-of-thought via a

@@ -13,6 +13,7 @@ Built on [DigitalOcean App Platform](https://www.digitalocean.com/products/app-p
 - Shows real telemetry per model: time-to-first-token, latency, token count, estimated cost.
 - The **Auto-Router** card reveals which underlying model DO picked for your prompt.
 - The **Advisor** (toggleable) runs a moderator model to produce **Consensus → Divergences → Choosing a model → Not sure?**.
+- Renders each model's answer as **Markdown live while it streams** (headings, lists, bold, fenced code) — fully escaped, so untrusted model output can't inject markup.
 - **Anti-abuse:** per-IP rate limits + per-run cost bounds + a daily token budget guard.
 
 > **Mock mode:** if no `DO_API_TOKEN` is set, the app runs on deterministic local output so it demos with zero keys (a "mock mode" badge shows).
