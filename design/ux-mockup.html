@@ -141,6 +141,31 @@ body{font-family:"Inter",system-ui,-apple-system,sans-serif;line-height:1.55;fon
 @keyframes rot{to{transform:rotate(360deg)}}
 
 /* caption */
+/* panels: cost + about */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:4px 4px 4px 16px;margin-top:16px}
+.panel-summary{cursor:pointer;list-style:none;padding:12px 14px;font-weight:700;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel-summary::-webkit-details-marker{display:none}
+.panel-summary::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--accent);transform:rotate(45deg);transition:transform .12s}
+.panel[open] .panel-summary::before{transform:rotate(90deg)}
+.panel-summary .hint{color:var(--dim);font-weight:500;font-size:.72rem}
+.panel .cost-body,.panel .about-body{padding:4px 14px 18px}
+.cost-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:14px}
+.cost-field{display:flex;flex-direction:column;gap:5px;font:500 10px var(--font-mono);color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
+.cost-field input{border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:8px;padding:7px 9px;font:600 13px var(--font-mono);font-variant-numeric:tabular-nums}
+.cost-row{display:flex;align-items:center;gap:10px;font-size:.78rem;margin:7px 0}
+.cr-label{width:150px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cr-bar{flex:1;height:14px;background:var(--surface2);border-radius:5px;overflow:hidden}
+.cr-fill{display:block;height:100%;background:var(--accent);border-radius:5px}
+.cr-val{width:90px;flex-shrink:0;text-align:right;font-weight:600}
+.about-body h3{font-size:.86rem;margin:14px 0 4px;color:var(--accent)}
+.about-body ul{margin:4px 0;padding-left:18px;color:var(--ink)}
+.about-body li{font-size:.78rem;margin:3px 0;line-height:1.45}
+.about-body code{font-family:var(--font-mono);font-size:.72rem;background:var(--surface2);padding:1px 4px;border-radius:4px}
+/* metric telemetry tooltip */
+.metric{position:relative;cursor:help}
+.metric b{cursor:help}
+.metric::after{content:attr(data-help);position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);width:200px;padding:7px 10px;border-radius:8px;background:var(--surface3);color:var(--ink);border:1px solid var(--line-strong);font:500 11px/1.4 var(--font-mono);white-space:normal;text-align:left;box-shadow:var(--shadow);opacity:0;pointer-events:none;z-index:40;transition:opacity .12s}
+.metric:hover::after,.metric:focus-visible::after{opacity:1}
 .cap{margin-top:18px;border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--surface);box-shadow:var(--shadow)}
 .cap .eyebrow{font:.62rem "JetBrains Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
 .cap h2{margin:0 0 4px;font-size:1.08rem;letter-spacing:-.01em}
@@ -251,13 +276,48 @@ function shell() {
       <label class="check"><input type="checkbox" checked> Advisor (consensus + recommendation)</label>
     </div>
     <div class="models">
-      <div class="glabel">Models &nbsp;·&nbsp; race a subset</div>
+      <div class="glabel">Models &nbsp;·&nbsp; compare a subset</div>
       <div class="mchips" id="mchips"></div>
     </div>
     <div class="runrow">
       <span class="note mono">limits: 8/run · 6/min/IP · 400k tokens/day</span>
-      <button class="runbtn" id="runbtn">Run models ⏵</button>
-    </div>`;
+      <button class="runbtn" id="runbtn">Compare models ⏵</button>
+    </div>
+    <details class="panel" data-od-id="cost-calc">
+      <summary class="panel-summary">Cost at scale <span class="hint">project monthly spend for repeated requests</span></summary>
+      <div class="cost-body">
+        <div class="cost-grid">
+          <label class="cost-field">Requests/month <input value="100000" readonly></label>
+          <label class="cost-field">Tokens in <input value="500" readonly></label>
+          <label class="cost-field">Tokens out <input value="600" readonly></label>
+        </div>
+        <div class="cost-row"><span class="cr-label">DeepSeek V4 Flash</span><span class="cr-bar"><span class="cr-fill" style="width:30%"></span></span><span class="cr-val mono">$30</span></div>
+        <div class="cost-row"><span class="cr-label">Llama 4 Maverick</span><span class="cr-bar"><span class="cr-fill" style="width:52%"></span></span><span class="cr-val mono">$52</span></div>
+        <div class="cost-row"><span class="cr-label">DeepSeek V4 Pro</span><span class="cr-bar"><span class="cr-fill" style="width:100%"></span></span><span class="cr-val mono">$215</span></div>
+      </div>
+    </details>
+    <details class="panel about">
+      <summary class="panel-summary">About this take-home POC <span class="hint">design &amp; non-functional requirements · build notes · reviewer talking points</span></summary>
+      <div class="about-body">
+        <h3>Design requirements</h3><ul>
+          <li>One prompt → multiple models <b>in parallel</b>, combined view.</li>
+          <li>Live telemetry per model (TTFT · latency · tokens · cost).</li>
+          <li>Reveal the Auto-Router's chosen model.</li>
+          <li>Advisor synthesizes consensus → divergences → a pick, to reduce model FOMO.</li>
+        </ul>
+        <h3>Non-functional requirements</h3><ul>
+          <li>Parallel + streaming (low TTFT; UI never blocks).</li>
+          <li>Partial-failure isolation; graceful 403/404; 429 retry + backoff.</li>
+          <li>Token server-side only; rate limits + daily budget guard.</li>
+          <li>Observability: trace/request ids, per-model + retry spans, privacy-safe audit.</li>
+        </ul>
+        <h3>Reviewer talking points</h3><ul>
+          <li>Scale guardrails to Redis + per-caller auth.</li>
+          <li>Router-as-a-service — the direct FOMO fix (ROADMAP.md).</li>
+          <li>Advisor-as-judge via evals; cost at scale (calculator above).</li>
+        </ul>
+      </div>
+    </details>`;
 }
 function modelsUi(variant){
   const base=[
@@ -292,7 +352,13 @@ function card(model,arch,opts){
     <div class="csub">${sub}</div></div>
     ${reason}${routed}<div class="cbody" data-cbody>${body}</div>${foot}</article>`;
 }
-function foot(ttft,lat,tok,cost,extra){return `<span class="mono">TTFT <b>${ttft}</b></span><span class="mono">lat <b>${lat}</b></span><span class="mono">tok <b>${tok}</b></span><span class="mono">cost <b>${cost}</b></span>${extra||''}`;}
+function foot(ttft,lat,tok,cost,extra){
+  const H={ttft:'Time to first token — how quickly the model began replying.',latency:'How long the model took to finish its full answer.',tokens:'Output length in tokens (≈ ¾ of a word each) — a rough cost/effort measure.',cost:'Estimated price of this model\'s answer from its token count. Approximate.'};
+  return `<span class="metric mono" tabindex="0" data-help="${H.ttft}">TTFT <b>${ttft}</b></span>`+
+         `<span class="metric mono" tabindex="0" data-help="${H.latency}">lat <b>${lat}</b></span>`+
+         `<span class="metric mono" tabindex="0" data-help="${H.tokens}">tok <b>${tok}</b></span>`+
+         `<span class="metric mono" tabindex="0" data-help="${H.cost}">cost <b>${cost}</b></span>${extra||''}`;
+}
 
 /* ---- caption ---- */
 function cap(scen,flowEx){
@@ -364,17 +430,18 @@ function s_routed(){shell();modelsUi('allOn');document.getElementById('console')
 function s_done(){shell();modelsUi('allOn');document.getElementById('console').insertAdjacentHTML('beforeend',
   status('4 / 4 complete','· done','<span class="mono" style="color:var(--warn)">~$0.0004</span>'));
   const c=document.getElementById('console');
-  c.insertAdjacentHTML('beforeend',`<div class="grid">`+
+  c.insertAdjacentHTML('beforeend',
+    `<div class="advisor"><h2>Advisor</h2><div class="win mono">moderator · deepseek-v4-flash-0731 · streamed</div><div class="md">
+    <h4>Consensus</h4><p>All models agree the core trade-off is <b>cost/latency vs. depth</b>; on short prompts the gap is small.</p>
+    <h4>Divergences</h4><p>DeepSeek V4 Flash is terse; Kimi K3 reasons aloud; the router silently picks one.</p>
+    <h4>Choosing a model</h4><p>For <i>this</i> prompt, <b>DeepSeek V4 Flash</b> is the value pick — near-parity output at a fraction of the cost. Reach for V4 Pro only when the task needs the extra depth.</p>
+    <h4>Not sure?</h4><p>Try rerunning with a more specific prompt; vaguer inputs widen the divergence.</p></div></div>`+
+    `<div class="grid">`+
     card(['deepseek-v4-flash-0731','DeepSeek V4 Flash','fast'],'fast',{pill:'<span class="pill done">done</span>',body:'A/B the fast lane: cheaper and ~same score on this simple prompt.',foot:foot('130ms','0.34s','62','$0.0000')})+
     card(['deepseek-v4-pro','DeepSeek V4 Pro','frontier'],'frontier',{pill:'<span class="pill done">done</span>',body:'The high-quality lane catches nuance the cheap lane misses on harder prompts.',foot:foot('420ms','1.0s','218','$0.0011')})+
     card(['kimi-k3','Kimi K3','reasoning'],'reasoning',{pill:'<span class="pill done">done</span>',body:'Shows work first, then the answer. Good when reasoning matters more than latency.',reason:'kimi-k3 think: reason about reader intent.',foot:foot('640ms','2.1s','711','$0.0020')})+
     card(['router:general','DO Auto-Router','auto'],'auto',{pill:'<span class="pill done">done</span>',routed:'deepseek-v4-pro',body:'Voted with deepseek-v4-pro — it agrees with the Advisor pick.',foot:foot('180ms','1.1s','205','$0.0006')})+
-    `</div>`+
-    `<div class="advisor"><h2>Advisor</h2><div class="win mono">moderator · deepseek-v4-pro · temp 0.3</div><div class="md">
-    <h4>Consensus</h4><p>All models agree the core trade-off is <b>cost/latency vs. depth</b>; on short prompts the gap is small.</p>
-    <h4>Divergences</h4><p>DeepSeek V4 Flash is terse; Kimi K3 reasons aloud; the router silently picks one.</p>
-    <h4>Choosing a model</h4><p>For <i>this</i> prompt, <b>DeepSeek V4 Flash</b> is the value pick — near-parity output at a fraction of the cost. Reach for V4 Pro only when the task needs the extra depth.</p>
-    <h4>Not sure?</h4><p>Try rerunning with a more specific prompt; vaguer inputs widen the divergence.</p></div></div>`);
+    `</div>`);
   cap('done',[['All cards carry telemetry','TTFT · latency · tokens · cost for each model'],['Advisor is prompt-specific','it reasons about THIS run, not stale benchmarks'],['Router vote surfaced','the platform\'s pick is itself a lane']]);
 }
 function s_empty(){shell();modelsUi('allOn');document.getElementById('console').insertAdjacentHTML('beforeend',`<div class="grid"><div class="empty">Nothing here yet.</div></div>`);cap('empty',[['Calm empty state','no animation, no noise before the first run']]);}
