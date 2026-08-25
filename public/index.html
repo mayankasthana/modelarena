@@ -93,6 +93,28 @@
         <p id="limits-note" class="muted small mono"></p>
         <button id="run" class="btn primary" data-od-id="cta-run">Compare models ⏵</button>
       </div>
+
+      <details class="panel" data-od-id="cost-calc">
+        <summary class="panel-summary">Cost at scale <span class="hint">project monthly spend for repeated requests</span></summary>
+        <div class="cost-body">
+          <div class="cost-grid">
+            <label class="cost-field">Requests / month
+              <input id="cc-req" type="number" min="1" value="100000" />
+              <span class="cc-chips">
+                <button type="button" class="chip cc" data-n="10000">10k</button>
+                <button type="button" class="chip cc" data-n="100000" aria-pressed="true">100k</button>
+                <button type="button" class="chip cc" data-n="1000000">1M</button>
+              </span>
+            </label>
+            <label class="cost-field">Tokens in / request
+              <input id="cc-in" type="number" min="0" value="500" /></label>
+            <label class="cost-field">Tokens out / request
+              <input id="cc-out" type="number" min="0" value="600" /></label>
+          </div>
+          <div class="cost-result" id="cc-result"><p class="muted small">Load the catalog to estimate costs…</p></div>
+          <p class="muted small">Estimated from each model's per-1k-token rate × the volume above. Not a quote — actual DigitalOcean pricing varies by plan. Tune the per-request token counts to your workload.</p>
+        </div>
+      </details>
     </section>
 
     <!-- Status bar -->
@@ -117,6 +139,53 @@
 
     <!-- Results grid -->
     <section id="results" class="grid" data-od-id="results-grid" aria-live="polite" aria-label="Model results"></section>
+
+    <!-- About this take-home POC -->
+    <details class="panel about" data-od-id="about-poc">
+      <summary class="panel-summary">About this take-home POC <span class="hint">design requirements · non-functional requirements · how it was built · notes for reviewers</span></summary>
+      <div class="about-body">
+        <h3>Design requirements</h3>
+        <ul>
+          <li>Send one prompt to multiple LLMs <b>in parallel</b> and present a combined view.</li>
+          <li>Stream responses live with per-model telemetry (TTFT, latency, tokens, cost).</li>
+          <li>Reveal which model DigitalOcean's Auto-Router chose for this prompt.</li>
+          <li>Provide an Advisor that synthesizes consensus, divergences, and a recommendation — reducing model FOMO.</li>
+          <li>Answer for <b>this prompt</b>, not abstract benchmark scores.</li>
+        </ul>
+
+        <h3>Non-functional requirements</h3>
+        <ul>
+          <li><b>Performance:</b> parallel fan-out; SSE streaming keeps first-token latency low; the UI never blocks.</li>
+          <li><b>Reliability:</b> per-model timeouts + partial-failure isolation; graceful 403 (tier-locked) and 404 (removed); 429 retry with backoff.</li>
+          <li><b>Security:</b> the DO token lives server-side only (App Platform secret) — never in the repo or browser; request/response size caps.</li>
+          <li><b>Cost &amp; scale:</b> per-IP rate limits, per-run cost bounds, and a daily token budget guard, sized under the workspace's DO quota.</li>
+          <li><b>Observability:</b> structured JSON logs, request/trace IDs, per-model + retry spans, and a privacy-safe run audit (no prompt text).</li>
+          <li><b>Configurability:</b> env-driven providers; the model catalog changes without code.</li>
+          <li><b>Accessibility &amp; responsive:</b> keyboard/focus-visible, aria-live, light/dark, reduced-motion, single-column on mobile.</li>
+        </ul>
+
+        <h3>How it was built — key decisions</h3>
+        <ul>
+          <li><b>One Node/Express service</b> serving the static UI + API (same-origin → no CORS).</li>
+          <li><b>OpenAI-compatible provider adapter</b> against the verified DO endpoint — one code path for every model.</li>
+          <li><b>Parallel fan-out + SSE streaming</b> (not polling/sequential): wall-time = slowest model, with live fill.</li>
+          <li><b>Reasoning capture:</b> chain-of-thought (<code>reasoning_content</code>) rendered for reasoning models.</li>
+          <li><b>Advisor is a model, not rules</b> — it reads for semantic consensus; streamed on a fast moderator so it feels instant.</li>
+          <li><b>Anti-abuse + budget guard</b>, <b>429 resilience</b>, and <b>mock mode</b> with no token.</li>
+          <li><b>Tests:</b> 13 unit/integration (node:test), a real-DO smoke contract check, and an interactive UX mockup (<code>design/ux-mockup.html</code>).</li>
+        </ul>
+
+        <h3>Notes for reviewers — where I'd go deep in a follow-up</h3>
+        <ul>
+          <li><b>Scale the guardrails:</b> the in-memory rate/budget limiter is correct for a single instance; production moves it to a shared store (Redis) and adds per-caller auth + quotas.</li>
+          <li><b>Productize the router:</b> the direct FOMO fix is routing-as-a-service — an OpenAI-compatible gateway that picks the best model per prompt, with ModelArena as its visible face (see <code>ROADMAP.md</code>).</li>
+          <li><b>Make the Advisor a judge:</b> add evals + an automated scorer that ranks models on this prompt, so the advice is measurable, not just reasoned.</li>
+          <li><b>Cost at scale:</b> use the calculator above — the real customer question is “is the expensive model worth it at volume?”</li>
+          <li><b>Observability depth:</b> drop OTel exporters + spend dashboards on top of the audit trail we already emit.</li>
+          <li><b>Honest gaps, called out:</b> no multi-tenant auth, in-memory audit, single-instance limits — all deliberate PoC scoping, documented in <code>DESIGN.md</code>.</li>
+        </ul>
+      </div>
+    </details>
   </main>
 
   <footer class="site-foot">

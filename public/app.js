@@ -102,6 +102,38 @@
   };
 
   /* =====================================================================
+     Cost-at-scale calculator — project monthly spend per model at a volume
+     ===================================================================== */
+  function fmtMoney(n) {
+    if (n == null) return '—';
+    return Math.abs(n) >= 1
+      ? '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 })
+      : '$' + n.toFixed(4);
+  }
+  function renderCost() {
+    const el = $('#cc-result');
+    if (!el) return;
+    const req = Math.max(0, +($('#cc-req').value || 0));
+    const tin = Math.max(0, +($('#cc-in').value || 0));
+    const tout = Math.max(0, +($('#cc-out').value || 0));
+    const rows = (state.catalog.models || [])
+      .filter((m) => m.rate && m.rate.in != null)
+      .map((m) => {
+        const per = (tin / 1000) * (m.rate.in || 0) + (tout / 1000) * (m.rate.out || 0);
+        return { id: m.id, label: m.label, monthly: req * per };
+      })
+      .sort((a, b) => a.monthly - b.monthly);
+    if (!rows.length) { el.innerHTML = '<p class="muted small">Load the catalog to estimate costs.</p>'; return; }
+    const max = Math.max(...rows.map((r) => r.monthly), 1);
+    el.innerHTML = rows.map((r) => `
+      <div class="cost-row" title="${r.id}">
+        <span class="cr-label">${r.label}</span>
+        <span class="cr-bar"><span class="cr-fill" style="width:${((r.monthly / max) * 100).toFixed(1)}%"></span></span>
+        <span class="cr-val mono">${fmtMoney(r.monthly)}</span>
+      </div>`).join('');
+  }
+
+  /* =====================================================================
      Catalog + chips
      ===================================================================== */
   async function loadCatalog() {
@@ -116,6 +148,7 @@
       badge.textContent = data.mock ? 'mock mode · no DO token' : 'live · DigitalOcean inference';
       const l = data.limits || {};
       $('#limits-note').textContent = `limits · ${l.maxModelsPerRun} models/run  ${l.runsPerMin}/min per IP  ${(l.dailyTokenBudget || 0).toLocaleString()} tok/day`;
+      renderCost();
     } catch (e) {
       $('#model-chips').innerHTML = '<span class="hint">Failed to load model catalog.</span>';
     }
@@ -399,6 +432,19 @@
   $('#temp').addEventListener('input', () => ($('#temp-out').textContent = $('#temp').value));
   $('#mtok').addEventListener('input', () => ($('#mtok-out').textContent = $('#mtok').value));
   $('#run').addEventListener('click', run);
+
+  /* Cost calculator */
+  ['cc-req', 'cc-in', 'cc-out'].forEach((id) => {
+    const el = $('#' + id);
+    if (el) el.addEventListener('input', renderCost);
+  });
+  $$('.cc-chips .cc').forEach((b) =>
+    b.addEventListener('click', () => {
+      $('#cc-req').value = b.dataset.n;
+      $$('.cc-chips .cc').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      renderCost();
+    })
+  );
 
   initTheme();
   renderEmpty();
