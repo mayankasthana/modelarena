@@ -395,7 +395,15 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 }
 .advisor h2 { font-size: 18px; color: var(--auto); }
 .advisor .win { font: 500 11px var(--font-mono); color: var(--muted); letter-spacing: .02em; width: 100%; padding-left: 46px; margin-top: 2px; }
-.advisor-body { margin-top: 14px; }
+.advisor-body {
+  margin-top: 14px;
+  /* Bound the advisor so streaming text scrolls INSIDE its own box instead of
+     pushing the results grid below it down (keeps the user's reading position). */
+  height: clamp(260px, 45vh, 420px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 6px;
+}
 .markdown h4 { margin: 18px 0 7px; font-size: 13.5px; letter-spacing: -0.005em; display: flex; align-items: center; gap: 8px; }
 .markdown h4:first-child { margin-top: 0; }
 .markdown h4::before { content: ""; width: 3px; height: 13px; border-radius: 3px; background: var(--auto); }

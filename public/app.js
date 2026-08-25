@@ -307,7 +307,11 @@
     state.startedAt = performance.now();
     state.firstTokenAt = {};
     const adv = { buf: '', timer: null };
-    const flushAdvisor = () => { $('#advisor-body').innerHTML = renderMarkdown(adv.buf); };
+    const flushAdvisor = () => {
+      const el = $('#advisor-body');
+      el.innerHTML = renderMarkdown(adv.buf);
+      if (el.scrollTop + el.clientHeight + 40 >= el.scrollHeight) el.scrollTop = el.scrollHeight; // keep newest visible, don't fight manual scroll
+    };
 
     const cards = {};
     for (const id of state.selected) {
