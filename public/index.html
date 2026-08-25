@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ModelArena — compare models on your prompt</title>
+  <meta name="description" content="Run one prompt across multiple LLMs in parallel and get a combined view — fight model FOMO on DigitalOcean." />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-head">
+    <div class="wrap row between">
+      <div class="brand row gap-8">
+        <span class="logo" aria-hidden="true">⑂</span>
+        <strong>ModelArena</strong>
+        <code class="tagline">multi-model compare · DO</code>
+      </div>
+      <span id="mode-badge" class="badge live" hidden>● live</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- Control deck -->
+    <section class="deck" aria-label="Compose and run">
+      <label class="field">
+        <span class="field-label">Prompt</span>
+        <textarea id="prompt" rows="4" maxlength="8000"
+          placeholder="Ask the same question to every model…"></textarea>
+      </label>
+
+      <div class="examples" aria-label="Example prompts">
+        <button class="chip example" data-prompt="Write a haiku about serverless inference.">haiku</button>
+        <button class="chip example" data-prompt="Explain Kubernetes networking to a backend engineer in 3 sentences.">explain</button>
+        <button class="chip example" data-prompt="Write a Python function to find a story issue in a time-series, with tests.">code</button>
+        <button class="chip example" data-prompt="Draft a 2-paragraph launch email announcing a new model-comparison product.">copy</button>
+      </div>
+
+      <div class="controls">
+        <div class="sliders">
+          <label class="field small">
+            <span class="field-label">Temperature <output id="temp-out">0.7</output></span>
+            <input id="temp" type="range" min="0" max="2" step="0.1" value="0.7" />
+          </label>
+          <label class="field small">
+            <span class="field-label">Max tokens <output id="mtok-out">1024</output></span>
+            <input id="mtok" type="range" min="64" max="4096" step="64" value="1024" />
+          </label>
+        </div>
+        <label class="field small check">
+          <input id="moderate" type="checkbox" checked />
+          <span>Advisor panel (consensus + recommendation)</span>
+        </label>
+      </div>
+
+      <fieldset class="models" id="model-picker">
+        <legend>Models</legend>
+        <div id="model-chips" class="chips"><span class="hint">Loading catalog…</span></div>
+      </fieldset>
+
+      <div class="row between run-row">
+        <p id="limits-note" class="muted small"></p>
+        <button id="run" class="btn primary">Run models ⏵</button>
+      </div>
+    </section>
+
+    <!-- Status bar -->
+    <div id="statusbar" class="statusbar" hidden>
+      <span id="status-text">•</span>
+      <span id="status-elapsed"></span>
+      <span id="status-cost" class="muted"></span>
+    </div>
+
+    <!-- Results grid -->
+    <section id="results" class="grid" aria-live="polite" aria-label="Model results"></section>
+
+    <!-- Advisor / consensus -->
+    <section id="advisor" class="advisor" hidden aria-label="Model selection advisor">
+      <h2>Advisor</h2>
+      <div id="advisor-body" class="markdown"></div>
+    </section>
+  </main>
+
+  <footer class="site-foot wrap">
+    <span class="muted small">ModelArena PoC · runs each selected model on DigitalOcean inference · model output is not fact-checked.</span>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>
