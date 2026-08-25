@@ -17,7 +17,7 @@ const express = require('express');
 const crypto = require('crypto');
 
 const { providers, MODELS, MODERATOR, activeModels, getModel, IS_MOCK } = require('./lib/models');
-const { streamComplete, complete, errToMessage } = require('./lib/providers');
+const { streamComplete, errToMessage } = require('./lib/providers');
 const { createRateLimiter } = require('./lib/ratelimit');
 const { scope } = require('./lib/logger');
 
@@ -191,17 +191,24 @@ app.post('/api/run', runPerDay, runPerMin, async (req, res) => {
     span.info('advisor.start');
     try {
       const mod = getModel(MODERATOR.id);
-      const { text, meta } = await complete(mod, {
+      // Stream the advisor instead of buffering the whole reply — first tokens
+      // appear in ~a TTFT, so the panel feels instant (it was the slowest step).
+      for await (const evt of streamComplete(mod, {
         prompt: moderatorPrompt(prompt, responses),
         system: MODERATOR.system,
         temperature: 0.3,
         maxTokens: Math.min(2048, maxTokens),
         onRetry: (a, w) => span.warn('advisor.retry', { attempt: a, waitMs: Math.round(w) }),
-      });
-      addBudget(meta.tokens);
-      consensus = { model: meta.selectedModel || MODERATOR.id };
-      span.info('advisor.done', { ms: meta.latencyMs, retries: meta.retries ?? 0 });
-      res.write(ssEvent({ type: 'consensus', text, meta: consensus }));
+      })) {
+        if (evt.token) res.write(ssEvent({ type: 'consensus_token', text: evt.token }));
+        else if (evt.done) {
+          const meta = evt.meta;
+          addBudget(meta.tokens);
+          consensus = { model: meta.selectedModel || MODERATOR.id };
+          span.info('advisor.done', { ms: meta.latencyMs, retries: meta.retries ?? 0 });
+          res.write(ssEvent({ type: 'consensus_done', meta: consensus }));
+        }
+      }
     } catch (e) {
       span.error('advisor.error', { message: errToMessage(e) });
       res.write(ssEvent({ type: 'consensus_error', message: errToMessage(e) }));

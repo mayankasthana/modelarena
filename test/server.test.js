@@ -75,8 +75,8 @@ test('POST /api/run with moderate=true emits a consensus event', async () => {
   });
   const text = await res.text();
   const events = text.split('\n').filter((l) => l.startsWith('data:')).map((l) => JSON.parse(l.slice(5)));
-  assert.ok(events.some((e) => e.type === 'consensus' && e.text.includes('Consensus')),
-    `expected consensus event:\n${text}`);
+  assert.ok(events.some((e) => e.type === 'consensus_token'), `expected streamed consensus_token:\n${text}`);
+  assert.ok(events.some((e) => e.type === 'consensus_done'), `expected consensus_done:\n${text}`);
 });
 
 test('validation: missing prompt -> 400', async () => {

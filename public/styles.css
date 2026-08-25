@@ -353,6 +353,26 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .card-foot .cost { color: var(--warn); font-weight: 600; }
 .card-foot .recovered { color: var(--accent); font-weight: 600; }
 
+/* -- telemetry help tooltips ------------------------------------------ */
+.metric { position: relative; cursor: help; }
+.metric b { cursor: help; }
+.metric::after {
+  content: attr(data-help);
+  position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%);
+  width: 220px; padding: 8px 11px; border-radius: 9px;
+  background: var(--surface-3); color: var(--text); border: 1px solid var(--border-strong);
+  font: 500 11.5px/1.45 var(--font-ui); white-space: normal; text-align: left;
+  box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none; z-index: 30;
+  transition: opacity .12s ease;
+}
+.metric::before {
+  content: ""; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--border-strong); opacity: 0; pointer-events: none; z-index: 31;
+  transition: opacity .12s ease;
+}
+.metric:hover::after, .metric:focus-visible::after,
+.metric:hover::before, .metric:focus-visible::before { opacity: 1; }
+
 /* =====================================================================
    Advisor
    ===================================================================== */

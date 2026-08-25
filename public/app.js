@@ -90,6 +90,17 @@
   const fmtUsd = (n) => (n == null ? '—' : `$${n.toFixed(4)}`);
   const fmtMs = (n) => (n == null ? '—' : n < 1000 ? `${Math.round(n)}ms` : `${(n / 1000).toFixed(2)}s`);
 
+  /* Telemetry metric with an on-hover explanation (accessible via focus too). */
+  function metric(label, value, help) {
+    return `<span class="metric" tabindex="0" aria-label="${label}: ${help}" data-help="${help}">${label} <b>${value}</b></span>`;
+  }
+  const HELP = {
+    ttft: 'Time to first token — how quickly the model began replying.',
+    latency: 'How long the model took to finish its full answer.',
+    tokens: 'Output length in tokens (≈ ¾ of a word each) — a rough effort/cost measure.',
+    cost: 'Estimated price of this model\'s answer from its token count. Approximate, not a bill.',
+  };
+
   /* =====================================================================
      Catalog + chips
      ===================================================================== */
@@ -236,6 +247,8 @@
     $('#results').innerHTML = '';
     state.startedAt = performance.now();
     state.firstTokenAt = {};
+    const adv = { buf: '', timer: null };
+    const flushAdvisor = () => { $('#advisor-body').innerHTML = renderMarkdown(adv.buf); };
 
     const cards = {};
     for (const id of state.selected) {
@@ -307,10 +320,10 @@
               c.routed.innerHTML = `Chose <b>${evt.meta.selectedModel}</b>`;
             }
             c.foot.innerHTML =
-              `<span>TTFT <b>${fmtMs(ttft)}</b></span>` +
-              `<span>latency <b>${fmtMs(evt.meta.latencyMs)}</b></span>` +
-              `<span class="m">tokens <b>${(tok.out || 0)}</b></span>` +
-              `<span class="m">cost <b class="cost">${fmtUsd(cost)}</b></span>`;
+              metric('TTFT', fmtMs(ttft), HELP.ttft) +
+              metric('latency', fmtMs(evt.meta.latencyMs), HELP.latency) +
+              metric('tokens', (tok.out || 0), HELP.tokens) +
+              metric('cost', fmtUsd(cost), HELP.cost);
             updateStatus();
             break;
           }
@@ -327,10 +340,21 @@
             break;
           case 'consensus_start':
             $('#advisor').hidden = false;
-            $('#advisor-body').innerHTML = '<div class="advisor-loading"><span class="spin"></span>Synthesizing consensus across models…</div>';
+            $('#advisor-body').innerHTML = '<div class="advisor-loading"><span class="spin"></span>Synthesizing…</div>';
+            adv.buf = '';
             break;
-          case 'consensus':
-            $('#advisor-body').innerHTML = renderMarkdown(evt.text);
+          case 'consensus_token':
+            adv.buf += evt.text;
+            if (!adv.timer) adv.timer = setTimeout(() => { adv.timer = null; flushAdvisor(); }, 120);
+            break;
+          case 'consensus_done':
+            if (adv.timer) { clearTimeout(adv.timer); adv.timer = null; }
+            flushAdvisor();
+            if (evt.meta?.model) $('#status-cost').textContent = `· advisor: ${evt.meta.model}`;
+            break;
+          case 'consensus': // fallback for older server
+            adv.buf = evt.text;
+            flushAdvisor();
             if (evt.meta?.model) $('#status-cost').textContent = `· advisor: ${evt.meta.model}`;
             break;
           case 'consensus_error':

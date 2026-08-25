@@ -48,7 +48,7 @@
     <!-- Page head -->
     <header class="page-head">
       <p class="eyebrow">DigitalOcean Inference · ModelArena</p>
-      <h1 data-od-id="page-title">Race your prompt across models, side by side.</h1>
+      <h1 data-od-id="page-title">Which model fits your prompt?</h1>
       <p class="lede">Send one prompt to several LLMs in parallel. Watch them <b>stream live</b>, compare real telemetry, and get an honest advisor read — end model FOMO.</p>
     </header>
 
@@ -85,13 +85,13 @@
       </div>
 
       <fieldset class="models" data-od-id="model-picker" id="model-picker">
-        <legend>Models — race a subset</legend>
+        <legend>Models — compare a subset</legend>
         <div id="model-chips" class="chips"><span class="hint">Loading catalog…</span></div>
       </fieldset>
 
       <div class="run-row">
         <p id="limits-note" class="muted small mono"></p>
-        <button id="run" class="btn primary" data-od-id="cta-run">Run models ⏵</button>
+        <button id="run" class="btn primary" data-od-id="cta-run">Compare models ⏵</button>
       </div>
     </section>
 
@@ -103,10 +103,7 @@
       <div class="status-progress"><span class="status-fill" id="status-fill"></span></div>
     </div>
 
-    <!-- Results grid -->
-    <section id="results" class="grid" data-od-id="results-grid" aria-live="polite" aria-label="Model results"></section>
-
-    <!-- Advisor / consensus -->
+    <!-- Advisor / consensus — placed ABOVE the grid so the combined view needs no scrolling -->
     <section id="advisor" class="advisor" hidden aria-label="Model selection advisor">
       <div class="advisor-head">
         <span class="ai-mark" aria-hidden="true">
@@ -117,6 +114,9 @@
       <p class="win mono">moderator synthesis · model selection recommendation</p>
       <div id="advisor-body" class="advisor-body markdown"></div>
     </section>
+
+    <!-- Results grid -->
+    <section id="results" class="grid" data-od-id="results-grid" aria-live="polite" aria-label="Model results"></section>
   </main>
 
   <footer class="site-foot">
