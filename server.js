@@ -19,10 +19,24 @@ const crypto = require('crypto');
 const { providers, MODELS, MODERATOR, activeModels, getModel, IS_MOCK } = require('./lib/models');
 const { streamComplete, complete, errToMessage } = require('./lib/providers');
 const { createRateLimiter } = require('./lib/ratelimit');
+const { scope } = require('./lib/logger');
 
 const app = express();
 app.use(express.json({ limit: '32kb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// --- request context: ids + structured logging + per-request audit ----------
+app.use((req, res, next) => {
+  req.requestId = req.headers['x-request-id'] || crypto.randomUUID().slice(0, 12);
+  req.traceId = req.headers['x-trace-id'] || crypto.randomUUID();
+  req.log = scope({ requestId: req.requestId, traceId: req.traceId, ip: req.ip || req.socket?.remoteAddress });
+  res.setHeader('X-Request-Id', req.requestId);
+  res.setHeader('X-Trace-Id', req.traceId);
+  const t0 = Date.now();
+  const logAccess = process.env.LOG_HTTP !== 'false';
+  res.on('finish', () => { if (logAccess) req.log.info('request', { method: req.method, path: req.originalUrl, status: res.statusCode, ms: Date.now() - t0 }); });
+  next();
+});
 
 // ---------------------------------------------------------------------------
 // Tunables (env-overridable; pickled to keep abuse + cost bounded)
@@ -40,6 +54,11 @@ const LIMITS = {
 // In-process budget/usage counters (single instance — see DESIGN.md).
 let spentTokens = 0;
 const addBudget = (t) => { if (t?.out) spentTokens += t.out; };
+
+// Recent-run audit buffer (privacy-safe, no prompt text). In production this
+// streams to DO Managed Logging / object storage instead of memory.
+const recentRuns = [];
+const MAX_RUNS_KEPT = 200;
 
 // Per-IP limiters
 const runPerMin = createRateLimiter({ windowMs: 60_000, max: LIMITS.RUNS_PER_MIN });
@@ -89,28 +108,34 @@ function moderatorPrompt(userPrompt, responses) {
 }
 
 app.post('/api/run', runPerDay, runPerMin, async (req, res) => {
-  const requestId = crypto.randomUUID().slice(0, 8);
+  const requestId = req.requestId;
+  const traceId = req.traceId;
   const { prompt = '', modelIds = [], options = {}, moderate = false } = req.body || {};
 
   // --- bounds --------------------------------------------------------------
   if (typeof prompt !== 'string' || !prompt.trim()) {
+    req.log.warn('run.rejected', { reason: 'no_prompt' });
     return res.status(400).json({ error: 'bad_request', message: 'A prompt is required.' });
   }
   if (prompt.length > LIMITS.MAX_PROMPT_CHARS) {
+    req.log.warn('run.rejected', { reason: 'prompt_too_long', length: prompt.length });
     return res.status(400).json({ error: 'too_large', message: `Prompt exceeds ${LIMITS.MAX_PROMPT_CHARS} chars.` });
   }
   const active = activeModels().map((m) => m.id);
   const picks = [...new Set(modelIds)].filter((id) => active.includes(id));
   if (picks.length === 0) {
+    req.log.warn('run.rejected', { reason: 'no_models' });
     return res.status(400).json({ error: 'bad_request', message: 'Select at least one available model.' });
   }
   if (picks.length > LIMITS.MAX_MODELS_PER_RUN) {
+    req.log.warn('run.rejected', { reason: 'too_many_models', count: picks.length });
     return res.status(400).json({ error: 'too_many_models', message: `Max ${LIMITS.MAX_MODELS_PER_RUN} models per run.` });
   }
   const maxTokens = Math.min(Number(options.maxTokens) || 1024, LIMITS.MAX_MAX_TOKENS);
   const temperature = Math.min(Math.max(Number(options.temperature) ?? 0.7, 0), 2);
 
   if (spentTokens >= LIMITS.DAILY_TOKEN_BUDGET) {
+    req.log.warn('run.rejected', { reason: 'budget_exhausted', spentTokens });
     return res.status(429).json({ error: 'budget', message: 'Daily inference budget reached. Try again tomorrow.' });
   }
 
@@ -121,12 +146,15 @@ app.post('/api/run', runPerDay, runPerMin, async (req, res) => {
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders?.();
-  res.write(ssEvent({ type: 'begin', requestId, modelIds: picks, mock: IS_MOCK }));
+  res.write(ssEvent({ type: 'begin', requestId, traceId, modelIds: picks, mock: IS_MOCK }));
 
-  const responses = {};
+  const responses = {};      // id -> { text, reasoning, selectedModel, meta }
+  const errorsById = {};
   const tasks = picks.map((id) =>
     (async () => {
       const model = getModel(id);
+      const span = req.log.with({ model: id, span: `model:${id}` });
+      span.info('model.start');
       try {
         res.write(ssEvent({ type: 'start', model: id }));
         for await (const evt of streamComplete(model, {
@@ -134,25 +162,33 @@ app.post('/api/run', runPerDay, runPerMin, async (req, res) => {
           system: '',
           temperature,
           maxTokens,
+          onRetry: (a, w) => span.warn('model.retry', { attempt: a, waitMs: Math.round(w) }),
         })) {
           if (evt.token) res.write(ssEvent({ type: 'token', model: id, text: evt.token }));
           else if (evt.reasoning) res.write(ssEvent({ type: 'reasoning', model: id, text: evt.reasoning }));
           else if (evt.done) {
             addBudget(evt.meta.tokens);
-            responses[id] = { text: evt.meta.text, reasoning: evt.meta.reasoning, selectedModel: evt.meta.selectedModel };
+            responses[id] = { text: evt.meta.text, reasoning: evt.meta.reasoning, selectedModel: evt.meta.selectedModel, meta: evt.meta };
+            span.info('model.done', { ms: evt.meta.latencyMs, tokensOut: evt.meta.tokens?.out, retries: evt.meta.retries ?? 0, selectedModel: evt.meta.selectedModel });
             res.write(ssEvent({ type: 'done', model: id, meta: evt.meta }));
           }
         }
       } catch (e) {
-        res.write(ssEvent({ type: 'error', model: id, message: errToMessage(e) }));
+        const msg = errToMessage(e);
+        errorsById[id] = msg;
+        span.error('model.error', { message: msg });
+        res.write(ssEvent({ type: 'error', model: id, message: msg }));
       }
     })()
   );
 
   await Promise.allSettled(tasks);
 
+  let consensus = null;
   if (moderate && Object.keys(responses).length >= 1) {
     res.write(ssEvent({ type: 'consensus_start', count: Object.keys(responses).length }));
+    const span = req.log.with({ span: 'advisor' });
+    span.info('advisor.start');
     try {
       const mod = getModel(MODERATOR.id);
       const { text, meta } = await complete(mod, {
@@ -160,16 +196,39 @@ app.post('/api/run', runPerDay, runPerMin, async (req, res) => {
         system: MODERATOR.system,
         temperature: 0.3,
         maxTokens: Math.min(2048, maxTokens),
+        onRetry: (a, w) => span.warn('advisor.retry', { attempt: a, waitMs: Math.round(w) }),
       });
       addBudget(meta.tokens);
-      res.write(ssEvent({ type: 'consensus', text, meta: { model: meta.selectedModel || MODERATOR.id } }));
+      consensus = { model: meta.selectedModel || MODERATOR.id };
+      span.info('advisor.done', { ms: meta.latencyMs, retries: meta.retries ?? 0 });
+      res.write(ssEvent({ type: 'consensus', text, meta: consensus }));
     } catch (e) {
+      span.error('advisor.error', { message: errToMessage(e) });
       res.write(ssEvent({ type: 'consensus_error', message: errToMessage(e) }));
     }
   }
 
   res.write(ssEvent({ type: 'end', spentTokens }));
   res.end();
+
+  // --- audit (privacy-safe: no prompt text, duration + spend only) ---------
+  const audit = {
+    requestId, traceId,
+    models: picks, moderate,
+    promptLength: prompt.length,
+    modelsOk: Object.keys(responses).length,
+    modelsErr: Object.keys(errorsById).length,
+    perModel: picks.map((id) => {
+      const r = responses[id];
+      if (r) return { model: id, status: 'ok', ms: r.meta.latencyMs, tokensOut: r.meta.tokens?.out, retries: r.meta.retries ?? 0, selectedModel: r.meta.selectedModel };
+      return { model: id, status: 'error', error: errorsById[id] };
+    }),
+    totalTokensOut: picks.reduce((s, id) => s + (responses[id]?.meta.tokens?.out || 0), 0),
+    consensus,
+  };
+  recentRuns.push(audit);
+  if (recentRuns.length > MAX_RUNS_KEPT) recentRuns.shift();
+  req.log.info('run.complete', audit);
 });
 
 // Busy-loop-free static fallback (SPA-ish single page)

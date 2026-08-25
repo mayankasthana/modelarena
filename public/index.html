@@ -5,34 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ModelArena — compare models on your prompt</title>
   <meta name="description" content="Run one prompt across multiple LLMs in parallel and get a combined view — fight model FOMO on DigitalOcean." />
+  <meta name="theme-color" content="#f5f7fa" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <header class="site-head">
-    <div class="wrap row between">
-      <div class="brand row gap-8">
-        <span class="logo" aria-hidden="true">⑂</span>
-        <strong>ModelArena</strong>
-        <code class="tagline">multi-model compare · DO</code>
+    <div class="head-row">
+      <a class="brand" href="/" aria-label="ModelArena home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2c3.6 3.1 6 6.2 6 9.5A6 6 0 0 1 6 11.5C6 8.2 8.4 5.1 12 2Z" fill="currentColor"/>
+            <circle cx="12" cy="11" r="2.2" fill="var(--surface)"/>
+          </svg>
+        </span>
+        <span class="brand-name">ModelArena</span>
+        <span class="brand-tag">multi-model compare<span class="sep">·</span>DigitalOcean inference</span>
+      </a>
+      <div class="head-actions">
+        <span id="mode-badge" class="badge" hidden></span>
+        <div class="theme-toggle" role="group" aria-label="Color theme">
+          <button type="button" class="theme-opt" data-theme="light" title="Light theme" aria-label="Light theme">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+            Light
+          </button>
+          <button type="button" class="theme-opt" data-theme="system" title="Match system preference" aria-label="Auto theme">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            Auto
+          </button>
+          <button type="button" class="theme-opt" data-theme="dark" title="Dark theme" aria-label="Dark theme">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+            Dark
+          </button>
+        </div>
       </div>
-      <span id="mode-badge" class="badge live" hidden>● live</span>
     </div>
   </header>
 
   <main class="wrap">
+    <!-- Page head -->
+    <header class="page-head">
+      <p class="eyebrow">DigitalOcean Inference · ModelArena</p>
+      <h1 data-od-id="page-title">Race your prompt across models, side by side.</h1>
+      <p class="lede">Send one prompt to several LLMs in parallel. Watch them <b>stream live</b>, compare real telemetry, and get an honest advisor read — end model FOMO.</p>
+    </header>
+
     <!-- Control deck -->
-    <section class="deck" aria-label="Compose and run">
-      <label class="field">
-        <span class="field-label">Prompt</span>
-        <textarea id="prompt" rows="4" maxlength="8000"
+    <section class="deck" data-od-id="control-deck" aria-label="Compose and run">
+      <label class="field" for="prompt">
+        <span class="field-label"><span>Prompt</span><span class="char-count" id="char-count">0 / 8000</span></span>
+        <textarea id="prompt" maxlength="8000"
           placeholder="Ask the same question to every model…"></textarea>
       </label>
 
       <div class="examples" aria-label="Example prompts">
-        <button class="chip example" data-prompt="Write a haiku about serverless inference.">haiku</button>
-        <button class="chip example" data-prompt="Explain Kubernetes networking to a backend engineer in 3 sentences.">explain</button>
-        <button class="chip example" data-prompt="Write a Python function to find a story issue in a time-series, with tests.">code</button>
-        <button class="chip example" data-prompt="Draft a 2-paragraph launch email announcing a new model-comparison product.">copy</button>
+        <button class="chip example" type="button" data-prompt="Write a haiku about serverless inference."><span class="k">haiku</span></button>
+        <button class="chip example" type="button" data-prompt="Explain Kubernetes networking to a backend engineer in 3 sentences."><span class="k">explain</span></button>
+        <button class="chip example" type="button" data-prompt="Write a Python function to find a story issue in a time-series, with tests."><span class="k">code</span></button>
+        <button class="chip example" type="button" data-prompt="Draft a 2-paragraph launch email announcing a new model-comparison product."><span class="k">copy</span></button>
       </div>
 
       <div class="controls">
@@ -48,40 +80,50 @@
         </div>
         <label class="field small check">
           <input id="moderate" type="checkbox" checked />
-          <span>Advisor panel (consensus + recommendation)</span>
+          <span>Advisor panel<span class="hint">consensus + pick a model</span></span>
         </label>
       </div>
 
-      <fieldset class="models" id="model-picker">
-        <legend>Models</legend>
+      <fieldset class="models" data-od-id="model-picker" id="model-picker">
+        <legend>Models — race a subset</legend>
         <div id="model-chips" class="chips"><span class="hint">Loading catalog…</span></div>
       </fieldset>
 
-      <div class="row between run-row">
-        <p id="limits-note" class="muted small"></p>
-        <button id="run" class="btn primary">Run models ⏵</button>
+      <div class="run-row">
+        <p id="limits-note" class="muted small mono"></p>
+        <button id="run" class="btn primary" data-od-id="cta-run">Run models ⏵</button>
       </div>
     </section>
 
     <!-- Status bar -->
-    <div id="statusbar" class="statusbar" hidden>
+    <div id="statusbar" class="statusbar" hidden role="status" aria-live="polite">
       <span id="status-text">•</span>
-      <span id="status-elapsed"></span>
-      <span id="status-cost" class="muted"></span>
+      <span id="status-elapsed" class="mono"></span>
+      <span id="status-cost" class="mono"></span>
+      <div class="status-progress"><span class="status-fill" id="status-fill"></span></div>
     </div>
 
     <!-- Results grid -->
-    <section id="results" class="grid" aria-live="polite" aria-label="Model results"></section>
+    <section id="results" class="grid" data-od-id="results-grid" aria-live="polite" aria-label="Model results"></section>
 
     <!-- Advisor / consensus -->
     <section id="advisor" class="advisor" hidden aria-label="Model selection advisor">
-      <h2>Advisor</h2>
-      <div id="advisor-body" class="markdown"></div>
+      <div class="advisor-head">
+        <span class="ai-mark" aria-hidden="true">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>
+        </span>
+        <h2>Advisor</h2>
+      </div>
+      <p class="win mono">moderator synthesis · model selection recommendation</p>
+      <div id="advisor-body" class="advisor-body markdown"></div>
     </section>
   </main>
 
-  <footer class="site-foot wrap">
-    <span class="muted small">ModelArena PoC · runs each selected model on DigitalOcean inference · model output is not fact-checked.</span>
+  <footer class="site-foot">
+    <div class="wrap">
+      <span class="muted small">ModelArena PoC · runs each selected model on DigitalOcean inference · model output is not fact-checked.</span>
+      <span class="muted small mono">DO · blr</span>
+    </div>
   </footer>
 
   <script src="/app.js"></script>

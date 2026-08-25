@@ -55,6 +55,17 @@ SMOKE_URL=https://<app>.ondigitalocean.app npm run smoke   # against a deployed 
 | `RUNS_PER_MIN` / `RUNS_PER_DAY` | Per-IP rate limits | `6` / `60` |
 | `DAILY_TOKEN_BUDGET` | Server-side daily spend guard | `400000` |
 | `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | Optional extra providers | — |
+| `LOG_LEVEL` | Structured-log minimum level | `info` |
+| `LOG_HTTP` | Log each request (method/path/status/duration) | `true` |
+
+## Observability
+Single-line JSON logs to stdout (parse with any JSON-log tooling). Every run
+is a **trace**: the request-context middleware sets `X-Request-Id` /
+`X-Trace-Id` (a client-supplied `X-Trace-Id` is honored for correlation), and
+each model emits `model.start`/`model.done`/`model.retry` spans; a privacy-safe
+`run.complete` **audit** records per-model status/latency/tokens/cost (no
+prompt text). See `DESIGN.md` §15–16 for the production evolution (OTel,
+managed logging/storage, SLOs, dashboards, alerting).
 
 ## Deploy on DigitalOcean
 

@@ -1,134 +1,149 @@
 <title>ModelArena UX map</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 <style>
 :root{
-  --ground:#0b0f13; --surface:#12181f; --surface2:#1a222c; --surface3:#212b36; --line:#26313d;
-  --ink:#e8edf2; --dim:#93a0ad;
-  --accent:#3fd6c8; --accent-ink:#04231f; --accent-soft:rgba(63,214,200,.14);
-  --router:#a79bff; --router-ink:#191033; --router-soft:rgba(167,155,255,.16);
-  --ok:#55e0a5; --warn:#e9b64f; --err:#f27777;
-  --ok-soft:rgba(85,224,165,.15); --warn-soft:rgba(233,182,79,.16); --err-soft:rgba(242,119,119,.15);
+  --ground:#f5f7fa; --surface:#ffffff; --surface2:#eef2f7; --surface3:#e5ebf3; --line:#dbe2ea; --line-strong:#c6d0dc;
+  --ink:#0f1824; --dim:#5a6677;
+  --accent:#0069ff; --accent-ink:#ffffff; --accent-soft:rgba(0,105,255,.12);
+  --router:#6e56cf; --router-ink:#ffffff; --router-soft:rgba(110,86,207,.15);
+  --ok:#0e9f5e; --warn:#a9700c; --err:#d64545;
+  --ok-soft:rgba(14,159,94,.13); --warn-soft:rgba(169,112,12,.14); --err-soft:rgba(214,69,69,.12);
+  --shadow:0 1px 2px rgba(13,17,23,.05),0 1px 3px rgba(13,17,23,.06);
 }
-:root:not([data-theme="light"]) body{background:var(--ground);color:var(--ink)}
-:root[data-theme="light"]{
-  --ground:#f2f5f7; --surface:#ffffff; --surface2:#edf1f5; --surface3:#e3e9ef; --line:#d8dfe6;
-  --ink:#16212c; --dim:#5c6a78;
-  --accent:#0b8f84; --accent-ink:#ffffff; --accent-soft:rgba(11,143,132,.13);
-  --router:#6d5bd0; --router-ink:#ffffff; --router-soft:rgba(109,91,208,.14);
-  --ok:#15965c; --warn:#b07a14; --err:#cf3f37;
-  --ok-soft:rgba(21,150,92,.13); --warn-soft:rgba(176,122,20,.15); --err-soft:rgba(207,63,55,.12);
+:root[data-theme="dark"]{
+  --ground:#0b1016; --surface:#121a24; --surface2:#1a2431; --surface3:#243244; --line:#26334a; --line-strong:#35445e;
+  --ink:#e7edf4; --dim:#92a0b3;
+  --accent:#4d97ff; --accent-ink:#071325; --accent-soft:rgba(77,151,255,.16);
+  --router:#9c8cff; --router-ink:#150f2e; --router-soft:rgba(156,140,255,.18);
+  --ok:#2fd486; --warn:#e0a94f; --err:#f17d73;
+  --ok-soft:rgba(47,212,134,.15); --warn-soft:rgba(224,169,79,.16); --err-soft:rgba(241,125,115,.15);
+  --shadow:0 1px 3px rgba(0,0,0,.5);
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{font-family:"IBM Plex Sans",system-ui,sans-serif;line-height:1.5;font-size:15px;-webkit-font-smoothing:antialiased;background:var(--ground);color:var(--ink);transition:background .25s,color .25s}
-.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+body{font-family:"Inter",system-ui,-apple-system,sans-serif;line-height:1.55;font-size:15px;-webkit-font-smoothing:antialiased;background:var(--ground);color:var(--ink);transition:background .25s,color .25s}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
 .wrap{max-width:1240px;margin:0 auto;padding:0 22px}
-.code{font-family:"IBM Plex Mono",monospace;font-size:.78rem}
+.code{font-family:"JetBrains Mono",monospace;font-size:.78rem}
 .tabnums{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
 
-/* ---------- prototype chrome ---------- */
-.bar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--ground) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+/* prototype chrome */
+.bar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--ground) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .bar .in{display:flex;align-items:center;gap:14px;padding:10px 22px;max-width:1240px;margin:0 auto;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:.01em}
 .brand .mark{color:var(--accent);font-weight:600}
 .brand .sub{color:var(--dim);font-weight:400;font-size:.76rem;letter-spacing:.18em;text-transform:uppercase}
 .grow{flex:1}
 .tools{display:flex;gap:8px;align-items:center}
-.tg{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);background:var(--surface2);color:var(--dim);border-radius:8px;font:600 .72rem "IBM Plex Mono",monospace;padding:4px 9px;cursor:pointer;letter-spacing:.02em}
+.tg{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);background:var(--surface2);color:var(--dim);border-radius:8px;font:600 .72rem "JetBrains Mono",monospace;padding:4px 9px;cursor:pointer;letter-spacing:.02em;min-height:30px}
 .tg:hover{color:var(--ink)}
 .tg.on{color:var(--accent);border-color:var(--accent)}
+
+/* segmented theme toggle (matches the app) */
+.ttg{display:inline-flex;padding:3px;gap:2px;background:var(--surface2);border:1px solid var(--line);border-radius:99px}
+.ttg .o{border:0;background:transparent;color:var(--dim);font:500 .74rem "Inter",sans-serif;min-height:28px;padding:0 10px;border-radius:99px;cursor:pointer}
+.ttg .o:hover{color:var(--ink)}
+.ttg .o.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
 .shell{display:grid;grid-template-columns:236px 1fr;gap:18px;max-width:1240px;margin:18px auto;padding:0 22px}
 .scen-nav{border-right:1px solid var(--line);padding-right:6px}
 .group{margin-bottom:18px}
-.group h3{font:.66rem "IBM Plex Mono",monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:0 0 8px}
-.scen{display:block;width:100%;text-align:left;border:0;background:transparent;color:var(--dim);font-size:.83rem;padding:6px 9px;border-radius:7px;cursor:pointer;line-height:1.25}
+.group h3{font:.66rem "JetBrains Mono",monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:0 0 8px}
+.scen{display:block;width:100%;text-align:left;border:0;background:transparent;color:var(--dim);font-size:.83rem;padding:7px 10px;border-radius:8px;cursor:pointer;line-height:1.25;border:1px solid transparent}
 .scen:hover{background:var(--surface2);color:var(--ink)}
+.scen:focus-visible{border-color:var(--accent)}
 .scen.on{background:var(--accent-soft);color:var(--accent)}
-.scen .k{font-family:"IBM Plex Mono",monospace;font-size:.66rem;opacity:.7;margin-right:6px}
+.scen .k{font-family:"JetBrains Mono",monospace;font-size:.64rem;opacity:.7;margin-right:6px}
 .main{min-width:0}
 
-/* ---------- the app console ---------- */
-.app{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-.app-head{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.app-title{font-weight:600}
+/* app console */
+.app{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.app-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.app-title{font-weight:700;letter-spacing:-.01em}
 .app-title .dot{color:var(--accent)}
-.badge{font:.66rem "IBM Plex Mono",monospace;letter-spacing:.06em;padding:3px 9px;border-radius:99px;font-weight:500}
+.badge{font:.66rem "JetBrains Mono",monospace;letter-spacing:.04em;padding:3px 10px;border-radius:99px;font-weight:600}
 .badge.live{background:var(--ok-soft);color:var(--ok)}
 .badge.mock{background:var(--warn-soft);color:var(--warn)}
-.console{padding:18px}
-.field-label{font:.7rem "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;margin-bottom:6px}
-.prompt{width:100%;min-height:78px;resize:vertical;background:var(--surface2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit;line-height:1.5}
+.console{padding:20px}
+.field-label{font:.7rem "JetBrains Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;margin-bottom:6px}
+.prompt{width:100%;min-height:84px;resize:vertical;background:var(--surface2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;line-height:1.5;transition:border-color .12s,box-shadow .12s,background .12s}
+.prompt:focus{outline:none;border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px var(--accent-soft)}
 .prompt.err{border-color:var(--err)}
 .examples{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 12px}
-.chip{border:1px solid var(--line);background:var(--surface2);color:var(--dim);border-radius:99px;padding:5px 11px;font-size:.8rem;cursor:pointer}
+.chip{border:1px solid var(--line);background:var(--surface2);color:var(--dim);border-radius:99px;padding:7px 13px;font:.8rem "Inter",sans-serif;cursor:pointer;min-height:34px;transition:border-color .12s,color .12s}
+.chip:hover{color:var(--ink);border-color:var(--accent)}
 .chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .row{display:flex;flex-wrap:wrap;gap:16px;align-items:end}
 .slider{flex:1;min-width:170px}
 .slider input{width:100%;accent-color:var(--accent)}
-.slider .val{float:right;color:var(--accent)}
+.slider .val{float:right;color:var(--accent);font-family:"JetBrains Mono",monospace}
 .check{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--dim)}
 .check input{accent-color:var(--accent)}
-.models{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px}
-.models .glabel{font:.68rem "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
-.mchips{display:flex;flex-wrap:wrap;gap:7px}
-.mchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:99px;padding:4px 10px;font-size:.78rem}
-.mchip .arch{font:.6rem "IBM Plex Mono",monospace;text-transform:uppercase;background:var(--surface3);border-radius:99px;padding:1px 6px;color:var(--dim);letter-spacing:.05em}
-.mchip.on{border-color:var(--accent);color:var(--accent)}
+.models{margin-top:14px;border-top:1px dashed var(--line-strong);padding-top:14px}
+.models .glabel{font:.68rem "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:9px}
+.mchips{display:flex;flex-wrap:wrap;gap:8px}
+.mchip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:99px;padding:6px 11px;font:.78rem "Inter",sans-serif;min-height:34px}
+.mchip .arch{font:.58rem "JetBrains Mono",monospace;text-transform:uppercase;background:var(--surface3);border-radius:99px;padding:2px 7px;color:var(--dim);letter-spacing:.05em}
+.mchip.on{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface2))}
 .mchip.on .arch{background:var(--accent-soft);color:var(--accent)}
+.mchip.off{opacity:.5;filter:saturate(.5)}
 .mchip.rout.on{border-color:var(--router);color:var(--router)}
 .mchip.rout.on .arch{background:var(--router-soft);color:var(--router)}
-.runrow{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
-.runbtn{border:0;background:var(--accent);color:var(--accent-ink);font-weight:600;border-radius:10px;padding:10px 20px;cursor:pointer;font-size:.9rem}
-.runbtn:disabled{opacity:.45;cursor:not-allowed}
+.runrow{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}
+.runbtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:600;border-radius:10px;padding:12px 22px;cursor:pointer;font-size:.92rem;min-height:44px;box-shadow:0 6px 18px -6px color-mix(in srgb,var(--accent) 60%,transparent);transition:background .15s}
+.runbtn:hover{background:color-mix(in srgb,var(--accent) 88%,#000)}
+.runbtn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
 .note{font-size:.72rem;color:var(--dim)}
 
 /* status */
-.statusbar{display:flex;gap:14px;align-items:center;margin:14px 0 0;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface0,#0d1217);font-size:.8rem;flex-wrap:wrap}
+.statusbar{display:flex;gap:14px;align-items:center;margin:14px 0 0;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:.8rem;flex-wrap:wrap}
 .statusbar b{color:var(--accent)}
 
 /* grid + cards */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:13px;margin:14px 0}
-.card{background:var(--surface2);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
-.card.auto{border-color:var(--router)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:14px;margin:14px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow)}
+.card.auto{border-color:color-mix(in srgb,var(--router) 55%,var(--line))}
+.card.auto .card-head{background:var(--router-soft)}
 .card.off{opacity:.4;filter:saturate(.4)}
-.card-head{padding:10px 13px;border-bottom:1px solid var(--line)}
-.ctitle{display:flex;align-items:center;gap:7px;font-weight:600;font-size:.9rem}
-.ctitle .at{font:.57rem "IBM Plex Mono",monospace;text-transform:uppercase;background:var(--surface3);color:var(--dim);border-radius:99px;padding:1px 6px;letter-spacing:.05em}
+.card-head{padding:11px 14px;border-bottom:1px solid var(--line)}
+.ctitle{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;flex-wrap:wrap}
+.ctitle .at{font:.56rem "JetBrains Mono",monospace;text-transform:uppercase;background:var(--surface3);color:var(--dim);border-radius:99px;padding:2px 8px;letter-spacing:.05em}
 .ctitle .at.auto{background:var(--router-soft);color:var(--router)}
-.pill{margin-left:auto;font:.62rem "IBM Plex Mono",monospace;padding:2px 8px;border-radius:99px;font-weight:500}
+.pill{margin-left:auto;font:.6rem "JetBrains Mono",monospace;padding:3px 9px;border-radius:99px;font-weight:600;letter-spacing:.03em}
 .pill.s{background:var(--accent-soft);color:var(--accent)}
 .pill.done{background:var(--ok-soft);color:var(--ok)}
 .pill.retry{background:var(--warn-soft);color:var(--warn);animation:pulse 1.1s infinite}
 .pill.err{background:var(--err-soft);color:var(--err)}
-.csub{font-size:.7rem;color:var(--dim);margin-top:1px}
-.creason{font-size:.72rem;color:var(--dim);padding:7px 13px;border-bottom:1px dashed var(--line);max-height:88px;overflow:hidden}
-.cbody{padding:11px 13px;font-size:.84rem;white-space:pre-wrap;word-break:break-word;flex:1;min-height:64px}
+.csub{font-size:.7rem;color:var(--dim);margin-top:2px}
+.creason{font-size:.72rem;color:var(--dim);padding:8px 14px;border-bottom:1px dashed var(--line);max-height:88px;overflow:hidden}
+.cbody{padding:12px 14px;font-size:.84rem;white-space:pre-wrap;word-break:break-word;flex:1;min-height:64px}
 .caret{display:inline-block;width:7px;height:.95em;background:var(--accent);vertical-align:text-bottom;animation:blink 1s steps(2) infinite}
 @keyframes blink{50%{opacity:0}}
-@keyframes pulse{50%{opacity:.55}}
-.routed{margin:0 13px 9px;padding:6px 10px;font-size:.72rem;border-radius:8px;background:var(--router-soft);color:var(--router);border:1px solid color-mix(in srgb,var(--router) 40%,transparent)}
-.cfoot{display:flex;gap:6px 14px;flex-wrap:wrap;padding:8px 13px;border-top:1px solid var(--line);font-size:.68rem;color:var(--dim)}
+@keyframes pulse{50%{opacity:.5}}
+.routed{margin:0 14px 9px;padding:7px 11px;font-size:.72rem;border-radius:8px;background:var(--router-soft);color:var(--router);border:1px solid color-mix(in srgb,var(--router) 38%,transparent)}
+.cfoot{display:flex;gap:6px 14px;flex-wrap:wrap;padding:9px 14px;border-top:1px solid var(--line);font-size:.67rem;color:var(--dim);font-family:"JetBrains Mono",monospace}
 .cfoot b{color:var(--ink);font-weight:600}
 .amt{color:var(--warn)}
 .focus{outline:2px solid var(--accent);outline-offset:2px}
 
 /* empty + advisor */
-.empty{grid-column:1/-1;border:1px dashed var(--line);border-radius:12px;color:var(--dim);text-align:center;padding:46px 20px;font-size:.86rem}
-.advisor{border:1px solid var(--router);border-radius:12px;padding:18px;background:var(--surface)}
-.advisor h2{font-weight:600;font-size:1rem;color:var(--router);margin:0 0 4px;display:flex;gap:8px;align-items:center}
-.advisor .win{font:.6rem "IBM Plex Mono",monospace;text-transform:uppercase;color:var(--dim);letter-spacing:.08em;margin-bottom:10px}
-.md h4{margin:14px 0 5px;font-size:.86rem}
+.empty{grid-column:1/-1;border:1px dashed var(--line-strong);border-radius:12px;color:var(--dim);text-align:center;padding:48px 20px;font-size:.86rem}
+.advisor{border:1px solid color-mix(in srgb,var(--router) 55%,var(--line));border-radius:12px;padding:20px;background:var(--surface);box-shadow:var(--shadow)}
+.advisor h2{font-weight:700;font-size:1.02rem;color:var(--router);margin:0 0 4px;display:flex;gap:8px;align-items:center}
+.advisor .win{font:.58rem "JetBrains Mono",monospace;text-transform:uppercase;color:var(--dim);letter-spacing:.08em;margin-bottom:10px}
+.md h4{margin:16px 0 6px;font-size:.87rem}
 .md h4:first-child{margin-top:0}
 .md p{font-size:.82rem;margin:5px 0}
 .ahint{color:var(--dim);font-size:.95em}
-.spin{display:inline-block;width:12px;height:12px;margin-right:8px;border:2px solid var(--router);border-top-color:transparent;border-radius:50%;animation:rot .8s linear infinite;vertical-align:-2px}
+.spin{display:inline-block;width:13px;height:13px;margin-right:8px;border:2px solid var(--router);border-top-color:transparent;border-radius:50%;animation:rot .8s linear infinite;vertical-align:-2px}
 @keyframes rot{to{transform:rotate(360deg)}}
 
 /* caption */
-.cap{margin-top:16px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface)}
-.cap .eyebrow{font:.64rem "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
-.cap h2{margin:0 0 4px;font-size:1.05rem}
+.cap{margin-top:18px;border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--surface);box-shadow:var(--shadow)}
+.cap .eyebrow{font:.62rem "JetBrains Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.cap h2{margin:0 0 4px;font-size:1.08rem;letter-spacing:-.01em}
 .cap p{margin:0;color:var(--dim);font-size:.85rem}
 .cap .flow{margin-top:8px;font-size:.78rem;color:var(--dim)}
 .cap .flow b{color:var(--ink)}
@@ -136,15 +151,13 @@ body{font-family:"IBM Plex Sans",system-ui,sans-serif;line-height:1.5;font-size:
 .cap li{margin:3px 0}
 
 /* toast */
-.toast{position:fixed;right:20px;bottom:20px;z-index:60;background:var(--surface3);border:1px solid var(--line);color:var(--ink);border-left:3px solid var(--warn);border-radius:10px;padding:11px 15px;font-size:.84rem;box-shadow:0 8px 24px rgba(0,0,0,.35);max-width:340px;animation:rise .25s ease}
+.toast{position:fixed;right:20px;bottom:20px;z-index:60;background:var(--surface);border:1px solid var(--line);color:var(--ink);border-left:3px solid var(--warn);border-radius:10px;padding:12px 16px;font-size:.84rem;box-shadow:0 8px 24px rgba(0,0,0,.35);max-width:340px;animation:rise .25s ease}
 @keyframes rise{from{transform:translateY(8px);opacity:0}}
 .toast b{display:block;margin-bottom:2px}
 
 /* blocking budget banner */
-.block{display:flex;gap:12px;align-items:flex-start;margin:14px 0 0;padding:12px 15px;border:1px solid var(--warn);background:var(--warn-soft);border-radius:12px;color:var(--warn)}
+.block{display:flex;gap:12px;align-items:flex-start;margin:14px 0 0;padding:13px 16px;border:1px solid var(--warn);background:var(--warn-soft);border-radius:12px;color:var(--warn)}
 .block .b{font-weight:600}
-
-/* banner (mock / network) */
 .banner{display:flex;gap:10px;align-items:center;margin-top:12px;padding:10px 13px;border:1px solid var(--err);background:var(--err-soft);color:var(--err);border-radius:11px;font-size:.82rem}
 
 /* mobile shell */
@@ -161,8 +174,12 @@ body.mobile .bar .tools{width:100%}
   <div class="brand"><span class="mark">⑂</span> ModelArena <span class="sub">UX map</span></div>
   <div class="grow"></div>
   <div class="tools">
-    <button class="tg" id="th-toggle" type="button">theme: <span id="th-label">system</span></button>
-    <button class="tg" id="mob-toggle" type="button">📱 mobile</button>
+    <div class="ttg" id="th-toggle" role="group" aria-label="Color theme">
+      <button class="o" data-t="light">Light</button>
+      <button class="o" data-t="system">Auto</button>
+      <button class="o" data-t="dark">Dark</button>
+    </div>
+    <button class="tg" id="mob-toggle" type="button">mobile</button>
   </div>
 </div></div>
 
@@ -454,9 +471,22 @@ function buildNav(){
 function go(k){if(live){live=false;}document.querySelectorAll('.scen').forEach(s=>s.classList.toggle('on',s.dataset.k===k));
   R[k](k);document.querySelector('.main .app')?.scrollIntoView?.({behavior:'smooth',block:'start'});}
 
-/* theme + mobile */
-let themeIdx=0,th=['system','light','dark'];
-document.getElementById('th-toggle').onclick=()=>{themeIdx=(themeIdx+1)%3;document.documentElement.setAttribute('data-theme',th[themeIdx]==='system'?'':th[themeIdx]);document.getElementById('th-label').textContent=th[themeIdx];};
+/* theme */
+(function(){
+  const THEMES=['light','system','dark'];
+  const btn=document.getElementById('th-toggle').querySelectorAll('.o');
+  let pref=(localStorage.getItem('arena-theme')||'system');
+  if(!THEMES.includes(pref))pref='system';
+  const apply=()=>{
+    const r= pref==='system' ? (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light') : pref;
+    document.documentElement.setAttribute('data-theme',r);
+    btn.forEach(b=>b.classList.toggle('on',b.dataset.t===pref));
+    try{localStorage.setItem('arena-theme',pref)}catch(e){}
+  };
+  btn.forEach(b=>b.addEventListener('click',()=>{pref=b.dataset.t;apply();}));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(pref==='system')apply();});
+  apply();
+})();
 document.getElementById('mob-toggle').onclick=()=>{document.body.classList.toggle('mobile');document.getElementById('mob-toggle').classList.toggle('on',document.body.classList.contains('mobile'));};
 
 buildNav();go('idle');

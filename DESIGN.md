@@ -153,3 +153,55 @@ health `/healthz`). Region `blr` for the app; inference served from `tor1`/`ric1
   quality dashboards.
 - Forward the advisor into a streaming router recommendation and A/B-validate
   it against human picks (see ROADMAP.md).
+
+## 15. Observability — logging, audit, tracing (shipped, not just documented)
+
+**Logging.** `lib/logger.js` emits single-line JSON to stdout; every record
+carries `ts/level/msg` plus a per-request context (`requestId`, `traceId`,
+`ip`) attached via `log.with()`. A request-context middleware assigns
+`X-Request-Id` / `X-Trace-Id` and **honors a client-supplied trace id**, so a
+single run is correlated from the browser all the way through to the gateway.
+Access lines log method/path/status/duration. `LOG_LEVEL` gates verbosity.
+
+**Tracing.** A run is a trace; each model is a span. The fan-out emits
+`model.start` / `model.done` (model, latency, tokensOut, retries, and
+`selectedModel` — the router's reveal), and the advisor its own spans. Every
+transient 429/5xx backoff logs `model.retry {attempt, waitMs}` — so you can
+distinguish "this model is slow" from "the gateway is shedding load" and even
+measure overload per model. Spans are structured lines today; the shape is
+OpenTelemetry-ready (the same ids become W3C `traceparent` in production).
+
+**Audit.** `run.complete` records each run: requested models, per-model
+status/latency/tokens/retries, totals, consensus model, prompt length. It is
+**privacy-safe by construction — no prompt or response text, ever** (length +
+nothing else), because the product is public and prompts are user data. Kept
+in a bounded in-memory buffer + stdout in the PoC; in production this streams
+to an append-only store / DO object storage / SIEM with retention and
+access control. It's the basis for spend attribution and abuse detection.
+
+**Tradeoffs.** In-memory audit is volatile and per-instance (fine at
+`instance_count: 1`, and we call it out); stdout JSON is cheap but not
+queryable at scale → managed logging + storage in prod. We deliberately do
+**not** expose a public `/api/usage` (it would leak IPs and usage across
+tenants); an admin-gated equivalent is a production route.
+
+## 16. Staff-level operational readiness (the interview-relevant view)
+
+- **SLO / error budget.** e.g. availability 99.5% + a TTFT p95 target on
+  `/api/run`; the budget is burned by gateway 429s and model failures — exactly
+  the signals our spans make measurable.
+- **Dashboards & alerting.** By (endpoint, model): request volume, error rate,
+  429 rate, latency histograms (TTFT / end-to-end), cost per model/day, budget
+  burn, rate-limit hits. Alerts on error-rate spikes, retry storms, budget
+  exhaustion.
+- **Cost observability.** Per-model & per-run cost (we already estimate it) →
+  spend dashboards + the budget guard we ship.
+- **Privacy & retention.** No prompt/response text in logs; retention +
+  who-can-query policy on audit; redaction on the public path.
+- **Feature flags & rollout.** Model catalog toggles; canary a new model to a
+  % of runs rather than all-or-nothing (ties to ROADMAP A/B).
+- **Rollback & reproducibility.** `deploy_on_push` + immutable images; pinned
+  model IDs; health gate before routing traffic.
+- **Error taxonomy.** Client rate-limit (429 per-IP) vs DO overload (429
+  platform) vs tier-lock (403) vs unknown model (404) — kept distinct in code
+  and logs so each maps to its own SLO/alerting bucket.
