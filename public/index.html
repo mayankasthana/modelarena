@@ -10,6 +10,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
+  <script>
+    /* Set the color theme BEFORE first paint to avoid a light->dark flash.
+       Runs in <head> so no flash of the wrong (default light) theme. */
+    (function () {
+      var p = 'system';
+      try { p = localStorage.getItem('arena-theme') || 'system'; } catch (e) { /* ignore */ }
+      var dark = false;
+      try { dark = p === 'dark' || (p === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches); }
+      catch (e) { /* ignore */ }
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute('content', dark ? '#0b1016' : '#f5f7fa');
+    })();
+  </script>
 </head>
 <body>
   <header class="site-head">
